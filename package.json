@@ -1,7 +1,7 @@
 {
-    "name": "musicard",
-    "version": "2.0.5",
-    "description": "Musicard is one of the best canvas libraries to create a variety of music cards.",
+    "name": "pixel-musicard",
+    "version": "2.0.7",
+    "description": "A custom musicrad for pixel bot.",
     "main": "./dist/index.js",
     "module": "./dist/index.mjs",
     "types": "./dist/index.d.ts",
@@ -25,20 +25,9 @@
         "test:c": "cd tests && node index.js"
     },
     "keywords": [
-        "musicard",
-        "music-card",
-        "discord-music-card",
-        "music-card-discord",
-        "discord.js",
-        "spotify",
-        "youtube",
-        "image",
-        "node-canvas",
-        "canvas-constructor",
-        "discord",
-        "discord-canvas"
+        "musicard"
     ],
-    "author": "flameface",
+    "author": "shotxd01",
     "license": "GPL-3.0-only",
     "devDependencies": {
         "@types/node": "^20.11.28",
@@ -47,10 +36,10 @@
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/unburn/musicard.git"
+        "url": "https://github.com/SHIBINSOJU/pixel-musicard"
     },
     "bugs": {
-        "url": "https://github.com/unburn/musicard/issues"
+        "url": "https://github.com/SHIBINSOJU/pixel-musicard/issues"
     },
     "dependencies": {
         "@napi-rs/canvas": "^0.1.51",

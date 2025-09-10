@@ -1,6 +1,55 @@
 // src/index.ts
 import { createCanvas, loadImage, GlobalFonts } from "@napi-rs/canvas";
 import * as path from "path";
+var drawDynamicBackground = (ctx, width, height) => {
+  ctx.fillStyle = "#120b26";
+  ctx.fillRect(0, 0, width, height);
+  const decorColor = "#2a1a3e";
+  ctx.strokeStyle = decorColor;
+  ctx.fillStyle = decorColor;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(20, 50);
+  ctx.lineTo(90, 10);
+  ctx.moveTo(40, 65);
+  ctx.lineTo(100, 25);
+  ctx.moveTo(width - 20, height - 50);
+  ctx.lineTo(width - 90, height - 10);
+  ctx.stroke();
+  ctx.fillRect(width - 50, 20, 10, 10);
+  ctx.fillRect(15, height - 30, 8, 8);
+  ctx.beginPath();
+  ctx.moveTo(110, 15);
+  ctx.lineTo(125, 35);
+  ctx.lineTo(100, 40);
+  ctx.closePath();
+  ctx.fill();
+  const panelX = 10;
+  const panelY = 10;
+  const panelWidth = width - 20;
+  const panelHeight = height - 20;
+  const panelRadius = 15;
+  const gradient = ctx.createLinearGradient(panelX, panelY, panelX, panelY + panelHeight);
+  gradient.addColorStop(0, "#3f2b44");
+  gradient.addColorStop(1, "#a978ff");
+  ctx.fillStyle = gradient;
+  ctx.beginPath();
+  ctx.roundRect(panelX, panelY, panelWidth, panelHeight, panelRadius);
+  ctx.fill();
+  ctx.save();
+  ctx.beginPath();
+  ctx.roundRect(panelX, panelY, panelWidth, panelHeight, panelRadius);
+  ctx.clip();
+  const pixelSize = 5;
+  const skylineBaseY = panelY + panelHeight;
+  const maxPixelHeight = 45;
+  for (let x = panelX; x < panelX + panelWidth; x += pixelSize) {
+    const pixelHeight = Math.random() * maxPixelHeight;
+    ctx.fillStyle = "#c5a3ff";
+    ctx.fillRect(x, skylineBaseY - pixelHeight, pixelSize, pixelHeight);
+  }
+  ctx.restore();
+};
 function roundRect(ctx, x, y, w, h, r) {
   if (w < 2 * r) r = w / 2;
   if (h < 2 * r) r = h / 2;
@@ -21,9 +70,7 @@ var Pixel = async (option) => {
     progress: option.progress ?? 10,
     startTime: option.startTime ?? "0:00",
     endTime: option.endTime ?? "0:00",
-    backgroundColor: option.backgroundColor ?? "#120b26",
-    backgroundImage: option.backgroundImage,
-    progressColor: option.progressColor ?? "#B78BFF",
+    progressColor: option.progressColor ?? "#FFFFFF",
     progressBarColor: option.progressBarColor ?? "#6A3C8B",
     nameColor: option.nameColor ?? "#FFFFFF",
     authorColor: option.authorColor ?? "#b3b3b3",
@@ -46,21 +93,9 @@ var Pixel = async (option) => {
     console.error("Font not found. Make sure 'pixel.ttf' is in the 'fonts' folder.");
     console.error(e);
   }
-  if (options.backgroundImage) {
-    try {
-      const bgImage = await loadImage(options.backgroundImage);
-      ctx.drawImage(bgImage, 0, 0, width, height);
-    } catch (e) {
-      console.warn(`Failed to load background image, falling back to color: ${options.backgroundColor}`);
-      ctx.fillStyle = options.backgroundColor;
-      ctx.fillRect(0, 0, width, height);
-    }
-  } else {
-    ctx.fillStyle = options.backgroundColor;
-    ctx.fillRect(0, 0, width, height);
-  }
+  drawDynamicBackground(ctx, width, height);
   const thumbSize = 120;
-  const thumbX = 15;
+  const thumbX = 25;
   const thumbY = 15;
   ctx.save();
   roundRect(ctx, thumbX, thumbY, thumbSize, thumbSize, 10);
@@ -83,12 +118,12 @@ var Pixel = async (option) => {
   const textX = thumbX + thumbSize + 20;
   ctx.fillStyle = options.nameColor;
   ctx.font = '16px "PixelFont"';
-  ctx.fillText(options.name, textX, 50, 270);
+  ctx.fillText(options.name, textX, 45, 260);
   ctx.fillStyle = options.authorColor;
   ctx.font = '14px "PixelFont"';
-  ctx.fillText(options.author, textX, 75, 270);
-  const progressBarY = 110;
-  const progressBarWidth = 280;
+  ctx.fillText(options.author, textX, 70, 260);
+  const progressBarY = 105;
+  const progressBarWidth = 265;
   const progressBarHeight = 6;
   const progressHandleRadius = 6;
   ctx.fillStyle = options.progressBarColor;
@@ -107,9 +142,9 @@ var Pixel = async (option) => {
   }
   ctx.fillStyle = options.timeColor;
   ctx.font = '12px "PixelFont"';
-  ctx.fillText(options.startTime, textX, 135);
+  ctx.fillText(options.startTime, textX, 130);
   ctx.textAlign = "right";
-  ctx.fillText(options.endTime, textX + progressBarWidth, 135);
+  ctx.fillText(options.endTime, textX + progressBarWidth, 130);
   return canvas.toBuffer("image/png");
 };
 export {

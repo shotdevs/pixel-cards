@@ -1,7 +1,9 @@
 "use strict";
+var __create = Object.create;
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -15,6 +17,14 @@ var __copyProps = (to, from, except, desc) => {
   }
   return to;
 };
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  // If the importer is in node compatibility mode or this is not an ESM
+  // file that has been converted to a CommonJS file using a Babel-
+  // compatible transform (i.e. "__esModule" has not been set), then set
+  // "default" to the CommonJS "module.exports" for node compatibility.
+  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+  mod
+));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
 // src/index.ts
@@ -23,105 +33,118 @@ __export(index_exports, {
   Pixel: () => Pixel
 });
 module.exports = __toCommonJS(index_exports);
-
-// src/themes/pixel.ts
 var import_canvas = require("@napi-rs/canvas");
-var import_cropify = require("cropify");
-
-// src/functions/generateSvg.ts
-var generateSvg = (svgContent) => {
-  return `data:image/svg+xml;base64,${Buffer.from(svgContent).toString(
-    "base64"
-  )}`;
-};
-
-// src/themes/pixel.ts
+var path = __toESM(require("path"));
+function roundRect(ctx, x, y, w, h, r) {
+  if (w < 2 * r) r = w / 2;
+  if (h < 2 * r) r = h / 2;
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+  return ctx;
+}
 var Pixel = async (option) => {
-  if (!option.progress) option.progress = 10;
-  if (!option.name) option.name = "Music Name";
-  if (!option.author) option.author = "By Unburn";
-  if (!option.startTime) option.startTime = "0:00";
-  if (!option.endTime) option.endTime = "0:00";
-  if (!option.progressBarColor) option.progressBarColor = "#C9A8FF";
-  if (!option.progressColor) option.progressColor = "#DDA6FF";
-  if (!option.backgroundColor) option.backgroundColor = "#1A0F1F";
-  if (!option.nameColor) option.nameColor = "#FFFFFF";
-  if (!option.authorColor) option.authorColor = "#DAD4E8";
-  if (!option.timeColor) option.timeColor = "#FFFFFF";
-  if (!option.imageDarkness) option.imageDarkness = 10;
-  if (!option.backgroundImage) option.backgroundImage = require("path").join(__dirname, "../assets/musicard-bg.png");
-  const noImageSvg = generateSvg(`<svg width="400" height="400" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect width="400" height="400" fill="${option.progressColor}"/>
-      </svg>`);
-  if (!option.thumbnailImage) option.thumbnailImage = noImageSvg;
-  let thumbnail;
+  const options = {
+    name: option.name,
+    author: option.author,
+    thumbnailImage: option.thumbnailImage,
+    progress: option.progress ?? 10,
+    startTime: option.startTime ?? "0:00",
+    endTime: option.endTime ?? "0:00",
+    backgroundColor: option.backgroundColor ?? "#120b26",
+    backgroundImage: option.backgroundImage,
+    progressColor: option.progressColor ?? "#B78BFF",
+    progressBarColor: option.progressBarColor ?? "#6A3C8B",
+    nameColor: option.nameColor ?? "#FFFFFF",
+    authorColor: option.authorColor ?? "#b3b3b3",
+    timeColor: option.timeColor ?? "#b3b3b3",
+    imageDarkness: option.imageDarkness ?? 0.4,
+    paused: option.paused ?? false
+  };
+  options.progress = Math.max(0, Math.min(100, options.progress));
+  const width = 450;
+  const height = 150;
+  const canvas = (0, import_canvas.createCanvas)(width, height);
+  const ctx = canvas.getContext("2d");
+  ctx.imageSmoothingEnabled = false;
   try {
-    thumbnail = await (0, import_canvas.loadImage)(await (0, import_cropify.cropImage)({
-      imagePath: option.thumbnailImage,
-      borderRadius: 24,
-      width: 250,
-      height: 250,
-      cropCenter: true
-    }));
-  } catch {
-    thumbnail = await (0, import_canvas.loadImage)(await (0, import_cropify.cropImage)({
-      imagePath: noImageSvg,
-      borderRadius: 24,
-      width: 250,
-      height: 250,
-      cropCenter: true
-    }));
-  }
-  if (option.progress < 0) option.progress = 0;
-  if (option.progress > 100) option.progress = 100;
-  if (option.name.length > 30) option.name = option.name.slice(0, 30) + "...";
-  if (option.author.length > 30) option.author = option.author.slice(0, 30) + "...";
-  try {
-    const canvas = (0, import_canvas.createCanvas)(1240, 520);
-    const ctx = canvas.getContext("2d");
-    const bgSvg = generateSvg(`<svg width="1240" height="520" viewBox="0 0 1240 520" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect width="1240" height="520" rx="30" fill="${option.backgroundColor}" />
-        </svg>`);
-    const bg = await (0, import_canvas.loadImage)(bgSvg);
-    ctx.drawImage(bg, 0, 0);
-    const pixelBandSvg = generateSvg(`<svg width="1240" height="200" viewBox="0 0 1240 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <linearGradient id="g" x1="0" x2="1" y1="0" y2="0">
-            <stop offset="0%" stop-color="#7A3BFF" />
-            <stop offset="100%" stop-color="#3B2C5C" />
-          </linearGradient>
-        </defs>
-        <rect x="0" y="0" width="1240" height="200" fill="url(#g)" fill-opacity="0.12" />
-        <!-- pixel blocks -->
-        ${Array.from({ length: 60 }).map((_, i) => {
-      const h = Math.floor(Math.random() * 40) + 10;
-      return `<rect x="${i * 20}" y="${150 - h}" width="16" height="${h}" fill="#AA88FF" fill-opacity="0.22"/>`;
-    }).join("")}
-        </svg>`);
-    const pixelBand = await (0, import_canvas.loadImage)(pixelBandSvg);
-    ctx.drawImage(pixelBand, 0, 60);
-    ctx.drawImage(thumbnail, 60, 135);
-    const completed = 820 * option.progress / 100;
-    const progressBarSvg = generateSvg(`<svg width="820" height="28" viewBox="0 0 820 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect width="820" height="28" rx="14" fill="#2A1D2E" />
-        <rect width="${completed}" height="28" rx="14" fill="${option.progressColor}" />
-        </svg>`);
-    const progressBar = await (0, import_canvas.loadImage)(progressBarSvg);
-    ctx.drawImage(progressBar, 340, 420);
-    ctx.fillStyle = option.nameColor;
-    ctx.font = "48px extrabold";
-    ctx.fillText(option.name, 340, 210);
-    ctx.fillStyle = option.authorColor;
-    ctx.font = "30px regular";
-    ctx.fillText(option.author, 340, 260);
-    ctx.fillStyle = option.timeColor;
-    ctx.font = "24px semibold";
-    ctx.fillText(option.startTime, 340, 468);
-    ctx.fillText(option.endTime, 1140, 468);
-    return canvas.toBuffer("image/png");
+    const fontPath = path.join(__dirname, "..", "fonts", "pixel.ttf");
+    if (!import_canvas.GlobalFonts.has("PixelFont")) {
+      import_canvas.GlobalFonts.registerFromPath(fontPath, "PixelFont");
+    }
   } catch (e) {
-    throw new Error(e.message);
+    console.error("Font not found. Make sure 'pixel.ttf' is in the 'fonts' folder.");
+    console.error(e);
   }
+  if (options.backgroundImage) {
+    try {
+      const bgImage = await (0, import_canvas.loadImage)(options.backgroundImage);
+      ctx.drawImage(bgImage, 0, 0, width, height);
+    } catch (e) {
+      console.warn(`Failed to load background image, falling back to color: ${options.backgroundColor}`);
+      ctx.fillStyle = options.backgroundColor;
+      ctx.fillRect(0, 0, width, height);
+    }
+  } else {
+    ctx.fillStyle = options.backgroundColor;
+    ctx.fillRect(0, 0, width, height);
+  }
+  const thumbSize = 120;
+  const thumbX = 15;
+  const thumbY = 15;
+  ctx.save();
+  roundRect(ctx, thumbX, thumbY, thumbSize, thumbSize, 10);
+  ctx.clip();
+  try {
+    const thumbnail = await (0, import_canvas.loadImage)(options.thumbnailImage);
+    ctx.drawImage(thumbnail, thumbX, thumbY, thumbSize, thumbSize);
+  } catch (e) {
+    ctx.fillStyle = "#333";
+    ctx.fillRect(thumbX, thumbY, thumbSize, thumbSize);
+    ctx.fillStyle = "#FFF";
+    ctx.font = '20px "PixelFont"';
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("?", thumbX + thumbSize / 2, thumbY + thumbSize / 2);
+  }
+  ctx.fillStyle = `rgba(0, 0, 0, ${options.imageDarkness})`;
+  ctx.fillRect(thumbX, thumbY, thumbSize, thumbSize);
+  ctx.restore();
+  const textX = thumbX + thumbSize + 20;
+  ctx.fillStyle = options.nameColor;
+  ctx.font = '16px "PixelFont"';
+  ctx.fillText(options.name, textX, 50, 270);
+  ctx.fillStyle = options.authorColor;
+  ctx.font = '14px "PixelFont"';
+  ctx.fillText(options.author, textX, 75, 270);
+  const progressBarY = 110;
+  const progressBarWidth = 280;
+  const progressBarHeight = 6;
+  const progressHandleRadius = 6;
+  ctx.fillStyle = options.progressBarColor;
+  ctx.beginPath();
+  ctx.roundRect(textX, progressBarY - progressBarHeight / 2, progressBarWidth, progressBarHeight, 3);
+  ctx.fill();
+  const progressWidth = options.progress / 100 * progressBarWidth;
+  ctx.fillStyle = options.progressColor;
+  ctx.beginPath();
+  ctx.roundRect(textX, progressBarY - progressBarHeight / 2, progressWidth, progressBarHeight, 3);
+  ctx.fill();
+  if (!options.paused) {
+    ctx.beginPath();
+    ctx.arc(textX + progressWidth, progressBarY, progressHandleRadius, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.fillStyle = options.timeColor;
+  ctx.font = '12px "PixelFont"';
+  ctx.fillText(options.startTime, textX, 135);
+  ctx.textAlign = "right";
+  ctx.fillText(options.endTime, textX + progressBarWidth, 135);
+  return canvas.toBuffer("image/png");
 };
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {

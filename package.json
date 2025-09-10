@@ -1,7 +1,7 @@
 {
     "name": "pixel-musicard",
-    "version": "2.0.7",
-    "description": "A custom musicrad for pixel bot.",
+    "version": "2.0.12",
+    "description": "A custom music card for the Pixel music bot.",
     "main": "./dist/index.js",
     "module": "./dist/index.mjs",
     "types": "./dist/index.d.ts",
@@ -17,15 +17,13 @@
         "fonts"
     ],
     "scripts": {
-        "build": "tsup src/index.ts --format cjs,esm --dts",
-        "build:watch": "tsup --watch",
-        "deploy": "npm publish",
-        "deploy:beta": "npm publish --tag beta",
-        "test:m": "cd tests && node index.mjs",
-        "test:c": "cd tests && node index.js"
+        "build": "tsup src/index.ts --format cjs,esm --dts --clean",
+        "build:watch": "tsup src/index.ts --format cjs,esm --dts --clean --watch"
     },
     "keywords": [
-        "musicard"
+        "musicard",
+        "discord",
+        "canvas"
     ],
     "author": "shotxd01",
     "license": "GPL-3.0-only",
@@ -38,11 +36,7 @@
         "type": "git",
         "url": "https://github.com/SHIBINSOJU/pixel-musicard"
     },
-    "bugs": {
-        "url": "https://github.com/SHIBINSOJU/pixel-musicard/issues"
-    },
     "dependencies": {
-        "@napi-rs/canvas": "^0.1.51",
-        "cropify": "latest"
+        "@napi-rs/canvas": "^0.1.51"
     }
 }

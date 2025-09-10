@@ -1,61 +1,52 @@
-# Classic Pro Model Card for Pixel Music Discord Bot
+# Pixel Musicard
 
-This README provides setup and usage instructions for the **Classic Pro Model Card** component of the Pixel Music Discord Bot.
+A stylish, pixel-themed music card generator for Discord bots, designed for easy integration and customization.
 
 ## Features
 
-- Stylish, customizable music card for Discord
-- Displays current track info, user avatar, and more
-- Designed for easy integration with Pixel Music Bot
+- Generates a "Now Playing" card with a modern, pixelated aesthetic.
+- Displays track info, album art, progress bar, and timestamps.
+- Highly customizable with colors, images, and text.
+- Built with high-performance `@napi-rs/canvas`.
 
 ## Installation
 
-1. **Clone the repository:**
+1.  **Clone the repository (or install from npm):**
     ```bash
-    git clone https://github.com/yourusername/pixel-musicard.git
-    cd pixel-musicard
+    npm install pixel-musicard
     ```
 
-2. **Install dependencies:**
-    ```bash
-    npm install
-    ```
+2.  **Ensure you have fonts and assets:**
+    - Place a font file (e.g., `PlusJakartaSans-Bold.ttf`) in a `fonts/` directory in your project root.
+    - If you use a default background, place it in an `assets/` directory.
 
 ## Usage
 
-Import and use the Classic Pro Model Card in your Discord bot code:
+Import and use the `Pixel` function in your Discord bot code. It returns a `Promise<Buffer>` which you can send as an image file.
 
-```js
-const { ClassicProCard } = require('./classic-pro-card');
+```javascript
+const { Pixel } = require('pixel-musicard');
+const fs = require('fs');
 
-// Example usage
-const card = new ClassicProCard({
-  username: 'User',
-  avatarUrl: 'https://example.com/avatar.png',
-  track: {
-     title: 'Song Title',
-     artist: 'Artist Name',
-     albumArt: 'https://example.com/album.png'
-  }
-});
+async function generateCard() {
+  const cardBuffer = await Pixel({
+    name: "Pixel Music",
+    author: "By Unburn",
+    thumbnailImage: "https://i.scdn.co/image/ab67616d0000b273b5220268a0a383b4855925bf",
+    progress: 42,
+    startTime: "1:20",
+    endTime: "3:21",
+    backgroundColor: "#120b26",
+    progressColor: '#B78BFF',
+    progressBarColor: '#6A3C8B',
+  });
 
-card.render().then(buffer => {
-  // Send buffer as image in Discord
-});
-```
+  // Save the image to a file
+  fs.writeFileSync('musicard.png', cardBuffer);
+  console.log('Generated musicard.png');
 
-## Configuration
+  // Or send it in a Discord message
+  // await interaction.reply({ files: [{ attachment: cardBuffer, name: 'musicard.png' }] });
+}
 
-Customize the card by passing options to the constructor:
-
-- `username`: Discord username
-- `avatarUrl`: URL to user's avatar
-- `track`: Object with `title`, `artist`, and `albumArt`
-
-## License
-
-MIT
-
----
-
-*For full bot setup and advanced features, see the main Pixel Music Bot documentation.*
+generateCard();

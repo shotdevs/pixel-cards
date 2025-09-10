@@ -1,22 +1,20 @@
-interface ThemeOptions {
+type PixelOption = {
+    name: string;
+    author: string;
+    thumbnailImage: string;
     progress?: number;
-    name?: string;
-    author?: string;
     startTime?: string;
     endTime?: string;
-    progressBarColor?: string;
-    progressColor?: string;
     backgroundColor?: string;
+    backgroundImage?: string;
+    progressColor?: string;
+    progressBarColor?: string;
     nameColor?: string;
     authorColor?: string;
     timeColor?: string;
     imageDarkness?: number;
-    backgroundImage?: string;
-    thumbnailImage?: string;
-    menuColor?: string;
     paused?: boolean;
-}
+};
+declare const Pixel: (option: PixelOption) => Promise<Buffer>;
 
-declare const Pixel: (option: ThemeOptions) => Promise<Buffer>;
-
-export { Pixel, type ThemeOptions };
+export { Pixel, type PixelOption };

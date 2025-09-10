@@ -1,4 +1,163 @@
-import { Pixel } from "./themes/pixel";
-import { ThemeOptions } from "./types";
+// CHANGED: We now import GlobalFonts instead of registerFont
+import { createCanvas, loadImage, GlobalFonts } from '@napi-rs/canvas';
+import { promises as fs } from 'fs';
+import * as path from 'path';
 
-export { Pixel, ThemeOptions };
+// Define the options for the Pixel card
+export type PixelOption = {
+    name: string;
+    author: string;
+    thumbnailImage: string;
+    progress?: number;
+    startTime?: string;
+    endTime?: string;
+    backgroundColor?: string;
+    backgroundImage?: string;
+    progressColor?: string;
+    progressBarColor?: string;
+    nameColor?: string;
+    authorColor?: string;
+    timeColor?: string;
+    imageDarkness?: number;
+    paused?: boolean;
+};
+
+// Helper function to draw a rounded rectangle
+function roundRect(ctx: any, x: number, y: number, w: number, h: number, r: number) {
+    if (w < 2 * r) r = w / 2;
+    if (h < 2 * r) r = h / 2;
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+    return ctx;
+}
+
+export const Pixel = async (option: PixelOption): Promise<Buffer> => {
+    // --- Set Defaults ---
+    const options = {
+        name: option.name,
+        author: option.author,
+        thumbnailImage: option.thumbnailImage,
+        progress: option.progress ?? 10,
+        startTime: option.startTime ?? '0:00',
+        endTime: option.endTime ?? '0:00',
+        backgroundColor: option.backgroundColor ?? '#120b26',
+        backgroundImage: option.backgroundImage,
+        progressColor: option.progressColor ?? '#B78BFF',
+        progressBarColor: option.progressBarColor ?? '#6A3C8B',
+        nameColor: option.nameColor ?? '#FFFFFF',
+        authorColor: option.authorColor ?? '#b3b3b3',
+        timeColor: option.timeColor ?? '#b3b3b3',
+        imageDarkness: option.imageDarkness ?? 0.4,
+        paused: option.paused ?? false,
+    };
+
+    options.progress = Math.max(0, Math.min(100, options.progress));
+
+    const width = 450;
+    const height = 150;
+    const canvas = createCanvas(width, height);
+    const ctx = canvas.getContext('2d');
+    
+    ctx.imageSmoothingEnabled = false;
+
+    // --- Font Registration ---
+    try {
+        const fontPath = path.join(__dirname, '..', 'fonts', 'pixel.ttf');
+        // CHANGED: We now use GlobalFonts.registerFromPath with an alias
+        if (!GlobalFonts.has('PixelFont')) { // Check if font is already registered
+            GlobalFonts.registerFromPath(fontPath, 'PixelFont');
+        }
+    } catch (e) {
+        console.error("Font not found. Make sure 'pixel.ttf' is in the 'fonts' folder.");
+        console.error(e);
+    }
+
+    // --- Draw Background ---
+    if (options.backgroundImage) {
+        try {
+            const bgImage = await loadImage(options.backgroundImage);
+            ctx.drawImage(bgImage, 0, 0, width, height);
+        } catch (e) {
+            console.warn(`Failed to load background image, falling back to color: ${options.backgroundColor}`);
+            ctx.fillStyle = options.backgroundColor;
+            ctx.fillRect(0, 0, width, height);
+        }
+    } else {
+        ctx.fillStyle = options.backgroundColor;
+        ctx.fillRect(0, 0, width, height);
+    }
+    
+    // --- Draw Thumbnail ---
+    const thumbSize = 120;
+    const thumbX = 15;
+    const thumbY = 15;
+    
+    ctx.save();
+    roundRect(ctx, thumbX, thumbY, thumbSize, thumbSize, 10);
+    ctx.clip();
+    
+    try {
+        const thumbnail = await loadImage(options.thumbnailImage);
+        ctx.drawImage(thumbnail, thumbX, thumbY, thumbSize, thumbSize);
+    } catch (e) {
+        ctx.fillStyle = '#333';
+        ctx.fillRect(thumbX, thumbY, thumbSize, thumbSize);
+        ctx.fillStyle = '#FFF';
+        ctx.font = '20px "PixelFont"';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('?', thumbX + thumbSize / 2, thumbY + thumbSize / 2);
+    }
+    
+    ctx.fillStyle = `rgba(0, 0, 0, ${options.imageDarkness})`;
+    ctx.fillRect(thumbX, thumbY, thumbSize, thumbSize);
+    ctx.restore();
+
+    // --- Draw Text ---
+    const textX = thumbX + thumbSize + 20;
+    
+    ctx.fillStyle = options.nameColor;
+    ctx.font = '16px "PixelFont"';
+    ctx.fillText(options.name, textX, 50, 270);
+    
+    ctx.fillStyle = options.authorColor;
+    ctx.font = '14px "PixelFont"';
+    ctx.fillText(options.author, textX, 75, 270);
+
+    // --- Draw Progress Bar ---
+    const progressBarY = 110;
+    const progressBarWidth = 280;
+    const progressBarHeight = 6;
+    const progressHandleRadius = 6;
+
+    ctx.fillStyle = options.progressBarColor;
+    ctx.beginPath();
+    ctx.roundRect(textX, progressBarY - progressBarHeight / 2, progressBarWidth, progressBarHeight, 3);
+    ctx.fill();
+
+    const progressWidth = (options.progress / 100) * progressBarWidth;
+    ctx.fillStyle = options.progressColor;
+    ctx.beginPath();
+    ctx.roundRect(textX, progressBarY - progressBarHeight / 2, progressWidth, progressBarHeight, 3);
+    ctx.fill();
+
+    if (!options.paused) {
+      ctx.beginPath();
+      ctx.arc(textX + progressWidth, progressBarY, progressHandleRadius, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    
+    // --- Draw Times ---
+    ctx.fillStyle = options.timeColor;
+    ctx.font = '12px "PixelFont"';
+    ctx.fillText(options.startTime, textX, 135);
+    ctx.textAlign = 'right';
+    ctx.fillText(options.endTime, textX + progressBarWidth, 135);
+
+    return canvas.toBuffer('image/png');
+};

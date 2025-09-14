@@ -18,8 +18,8 @@
     ],
     "scripts": {
         "build": "tsup src/index.ts --format cjs,esm --dts --clean",
-        "build:watch": "tsup src/index.ts --format cjs,esm --dts --clean --watch"
-    },
+        "build:watch": "tsup src/index.ts --format cjs,esm --dts --clean --watch
+    },"
     "keywords": [
         "musicard",
         "discord",

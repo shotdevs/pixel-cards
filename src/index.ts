@@ -2,27 +2,18 @@ import { createCanvas, loadImage, GlobalFonts } from '@napi-rs/canvas';
 import { promises as fs } from 'fs';
 import * as path from 'path';
 
-// --- NEW HELPER FUNCTION TO DRAW THE SYNTHWAVE/PIXEL BACKGROUND ---
-/**
- * Draws the new synthwave-style background based on the provided image.
- * @param {CanvasRenderingContext2D} ctx The canvas context to draw on.
- * @param {number} width The width of the canvas.
- * @param {number} height The height of the canvas.
- */
+// --- BACKGROUND DRAWING FUNCTION (Slight color tweak) ---
 const drawSynthwaveBackground = (ctx: any, width: number, height: number) => {
-    // --- Define Colors from the Target Image ---
-    const bgColor = '#0A021A'; // Very dark blue/purple
-    const frameGlowColor = '#00BFFF'; // Bright cyan/blue for the glow
-    const innerPanelColor = 'rgba(13, 5, 43, 0.85)'; // Dark, semi-transparent inner panel
-    const glitchColor1 = '#4D68F8'; // Blue for glitch pixels
-    const glitchColor2 = '#F84DF0'; // Magenta for glitch pixels
-    const visualizerColor = '#E600E6'; // Bright magenta for visualizer
+    const bgColor = '#0A021A'; 
+    const frameGlowColor = '#007BFF'; // Updated to a more royal blue
+    const innerPanelColor = 'rgba(13, 5, 43, 0.85)';
+    const glitchColor1 = '#4D68F8';
+    const glitchColor2 = '#F84DF0';
+    const visualizerColor = '#E600E6';
 
-    // --- Step 1: Draw the solid dark background ---
     ctx.fillStyle = bgColor;
     ctx.fillRect(0, 0, width, height);
 
-    // --- Step 2: Draw scattered "glitch" pixels around the frame ---
     const pixelCount = 50;
     const pixelSize = 3;
     for (let i = 0; i < pixelCount; i++) {
@@ -32,19 +23,16 @@ const drawSynthwaveBackground = (ctx: any, width: number, height: number) => {
         ctx.fillRect(x, y, pixelSize, pixelSize);
     }
 
-    // --- Step 3: Draw the main glowing outer frame ---
     const panelX = 20;
     const panelY = 10;
     const panelWidth = width - 40;
     const panelHeight = height - 20;
     const panelRadius = 15;
 
-    // Use shadow to create the glow effect
     ctx.save();
     ctx.shadowColor = frameGlowColor;
     ctx.shadowBlur = 15;
     
-    // Draw the rounded rectangle path for the border
     ctx.beginPath();
     ctx.moveTo(panelX + panelRadius, panelY);
     ctx.lineTo(panelX + panelWidth - panelRadius, panelY);
@@ -57,14 +45,12 @@ const drawSynthwaveBackground = (ctx: any, width: number, height: number) => {
     ctx.quadraticCurveTo(panelX, panelY, panelX + panelRadius, panelY);
     ctx.closePath();
 
-    // Stroke the path to create the border
     ctx.strokeStyle = frameGlowColor;
     ctx.lineWidth = 4;
     ctx.stroke();
-    ctx.restore(); // Restore to remove shadow effect for subsequent drawings
+    ctx.restore();
 
-    // --- Step 4: Draw the inner content panel ---
-    const padding = 4; // Padding between the outer frame and inner panel
+    const padding = 4;
     const innerX = panelX + padding;
     const innerY = panelY + padding;
     const innerWidth = panelWidth - padding * 2;
@@ -85,35 +71,34 @@ const drawSynthwaveBackground = (ctx: any, width: number, height: number) => {
     ctx.closePath();
     ctx.fill();
 
-    // --- Step 5: Draw the "visualizer" on the right side ---
-    const visualizerX = innerX + innerWidth - 25;
+    const visualizerX = innerX + innerWidth - 30;
     const visualizerBaseY = innerY + innerHeight - 20;
     const barWidth = 4;
 
-    for (let i = 0; i < 4; i++) {
-        const barHeight = Math.random() * 40 + 10; // Random height between 10 and 50
+    for (let i = 0; i < 5; i++) {
+        const barHeight = Math.random() * 40 + 10;
         ctx.fillStyle = visualizerColor;
         ctx.fillRect(visualizerX + i * (barWidth + 2), visualizerBaseY - barHeight, barWidth, barHeight);
     }
 };
 
-
-// --- Main Pixel Function (Updated) ---
+// --- Main Pixel Function (Updated for new style) ---
 
 export type PixelOption = {
-    name: string;
+    name: string; // Can now contain '\n' for multiline titles
     author: string;
     thumbnailImage: string;
     progress?: number;
     startTime?: string;
     endTime?: string;
-    progressColor?: string;
+    progressColor?: string; // Gradient start color
+    progressGradientEndColor?: string; // NEW: Gradient end color
     progressBarColor?: string;
     nameColor?: string;
     authorColor?: string;
     timeColor?: string;
     imageDarkness?: number;
-    paused?: boolean;
+    paused?: boolean; // Paused is no longer used visually, but kept for API consistency
 };
 
 // Helper function to draw a rounded rectangle
@@ -131,7 +116,7 @@ function roundRect(ctx: any, x: number, y: number, w: number, h: number, r: numb
 }
 
 export const Pixel = async (option: PixelOption): Promise<Buffer> => {
-    // Set Defaults
+    // Set Defaults to match the new image style
     const options = {
         name: option.name,
         author: option.author,
@@ -139,29 +124,27 @@ export const Pixel = async (option: PixelOption): Promise<Buffer> => {
         progress: option.progress ?? 10,
         startTime: option.startTime ?? '0:00',
         endTime: option.endTime ?? '0:00',
-        progressColor: option.progressColor ?? '#00BFFF', // Changed to match the blue glow
-        progressBarColor: option.progressBarColor ?? '#2C1D68', // Darker blue for the bar background
-        nameColor: option.nameColor ?? '#FFFFFF',
-        authorColor: option.authorColor ?? '#b3b3b3',
-        timeColor: option.timeColor ?? '#b3b3b3',
-        imageDarkness: option.imageDarkness ?? 0.0, // Reduced darkness to show more of the image
+        progressColor: option.progressColor ?? '#00FFFF', // Cyan start of gradient
+        progressGradientEndColor: option.progressGradientEndColor ?? '#FF00FF', // Magenta end of gradient
+        progressBarColor: option.progressBarColor ?? '#29194A', // Dark purple for the bar background
+        nameColor: option.nameColor ?? '#50FFFF', // Bright Cyan
+        authorColor: option.authorColor ?? '#C89CFF', // Lavender
+        timeColor: option.timeColor ?? '#50FFFF', // Bright Cyan
+        imageDarkness: option.imageDarkness ?? 0.0,
         paused: option.paused ?? false,
     };
 
     options.progress = Math.max(0, Math.min(100, options.progress));
 
     const width = 800;
-    const height = 250;
+    const height = 280; // Increased height for better layout
     const canvas = createCanvas(width, height);
     const ctx = canvas.getContext('2d');
     
-    // Disabling smoothing to keep the pixelated font sharp
     ctx.imageSmoothingEnabled = false;
 
     // --- Font Registration ---
     try {
-        // Assuming your font file is named 'pixel.ttf' and located in a 'fonts' directory
-        // relative to the compiled JS output.
         const fontPath = path.join(__dirname, '..', 'fonts', 'pixel.ttf'); 
         if (!GlobalFonts.has('PixelFont')) {
             GlobalFonts.registerFromPath(fontPath, 'PixelFont');
@@ -171,13 +154,13 @@ export const Pixel = async (option: PixelOption): Promise<Buffer> => {
         console.error(e);
     }
 
-    // --- Draw the new background ---
+    // --- Draw the background ---
     drawSynthwaveBackground(ctx, width, height);
     
-    // --- Draw Thumbnail (Coordinates adjusted for new background) ---
-    const thumbSize = 180; // Larger thumbnail
-    const thumbX = 50; // Adjusted X position
-    const thumbY = (height - thumbSize) / 2; // Center vertically
+    // --- Draw Thumbnail ---
+    const thumbSize = 200;
+    const thumbX = 40;
+    const thumbY = (height - thumbSize) / 2;
     
     ctx.save();
     roundRect(ctx, thumbX, thumbY, thumbSize, thumbSize, 10);
@@ -202,48 +185,54 @@ export const Pixel = async (option: PixelOption): Promise<Buffer> => {
     }
     ctx.restore();
 
-    // --- Draw Text (Coordinates adjusted for new background) ---
-    const textX = thumbX + thumbSize + 30; // More space after thumbnail
+    // --- Draw Text (with multiline support for name) ---
+    const textX = thumbX + thumbSize + 30;
     const textAvailableWidth = width - textX - 50;
     
+    // Draw Title (handles multiple lines)
     ctx.fillStyle = options.nameColor;
-    ctx.font = '30px "PixelFont"'; // Larger font
-    ctx.fillText(options.name, textX, 80, textAvailableWidth);
-    
-    ctx.fillStyle = options.authorColor;
-    ctx.font = '24px "PixelFont"'; // Larger font
-    ctx.fillText(options.author, textX, 125, textAvailableWidth);
+    ctx.font = '28px "PixelFont"';
+    const nameLines = options.name.split('\n');
+    let currentY = 80;
+    const lineHeight = 35;
+    nameLines.forEach(line => {
+        ctx.fillText(line, textX, currentY, textAvailableWidth);
+        currentY += lineHeight;
+    });
 
-    // --- Draw Progress Bar (Coordinates adjusted for new background) ---
-    const progressBarY = 175; // Adjusted Y position
+    // Draw Author
+    ctx.fillStyle = options.authorColor;
+    ctx.font = '22px "PixelFont"';
+    ctx.fillText(options.author, textX, currentY + 5, textAvailableWidth);
+
+    // --- Draw Gradient Progress Bar ---
+    const progressBarY = 200;
     const progressBarWidth = textAvailableWidth;
     const progressBarHeight = 8;
-    const progressHandleRadius = 8;
 
+    // Draw the background of the progress bar
     ctx.fillStyle = options.progressBarColor;
     ctx.beginPath();
     roundRect(ctx, textX, progressBarY - progressBarHeight / 2, progressBarWidth, progressBarHeight, 4);
     ctx.fill();
 
+    // Draw the gradient progress
     const progressWidth = (options.progress / 100) * progressBarWidth;
     if (progressWidth > 0) {
-        ctx.fillStyle = options.progressColor;
+        // Create a horizontal gradient that spans the width of the progressed part
+        const gradient = ctx.createLinearGradient(textX, 0, textX + progressWidth, 0);
+        gradient.addColorStop(0, options.progressColor); // Start color
+        gradient.addColorStop(1, options.progressGradientEndColor); // End color
+
+        ctx.fillStyle = gradient;
         ctx.beginPath();
         roundRect(ctx, textX, progressBarY - progressBarHeight / 2, progressWidth, progressBarHeight, 4);
         ctx.fill();
     }
-
-    if (!options.paused) {
-      // The handle should not go beyond the bounds of the progress bar
-      const handleX = Math.max(textX + progressHandleRadius, Math.min(textX + progressWidth, textX + progressBarWidth - progressHandleRadius));
-      ctx.beginPath();
-      ctx.arc(handleX, progressBarY, progressHandleRadius, 0, Math.PI * 2);
-      ctx.fill();
-    }
     
-    // --- Draw Times (Coordinates adjusted for new background) ---
+    // --- Draw Times ---
     ctx.fillStyle = options.timeColor;
-    ctx.font = '20px "PixelFont"'; // Larger font
+    ctx.font = '20px "PixelFont"';
     const timeY = progressBarY + 35;
     ctx.textAlign = 'left';
     ctx.fillText(options.startTime, textX, timeY);

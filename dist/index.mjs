@@ -3,7 +3,7 @@ import { createCanvas, loadImage, GlobalFonts } from "@napi-rs/canvas";
 import * as path from "path";
 var drawSynthwaveBackground = (ctx, width, height) => {
   const bgColor = "#0A021A";
-  const frameGlowColor = "#00BFFF";
+  const frameGlowColor = "#007BFF";
   const innerPanelColor = "rgba(13, 5, 43, 0.85)";
   const glitchColor1 = "#4D68F8";
   const glitchColor2 = "#F84DF0";
@@ -60,10 +60,10 @@ var drawSynthwaveBackground = (ctx, width, height) => {
   ctx.quadraticCurveTo(innerX, innerY, innerX + innerRadius, innerY);
   ctx.closePath();
   ctx.fill();
-  const visualizerX = innerX + innerWidth - 25;
+  const visualizerX = innerX + innerWidth - 30;
   const visualizerBaseY = innerY + innerHeight - 20;
   const barWidth = 4;
-  for (let i = 0; i < 4; i++) {
+  for (let i = 0; i < 5; i++) {
     const barHeight = Math.random() * 40 + 10;
     ctx.fillStyle = visualizerColor;
     ctx.fillRect(visualizerX + i * (barWidth + 2), visualizerBaseY - barHeight, barWidth, barHeight);
@@ -89,20 +89,24 @@ var Pixel = async (option) => {
     progress: option.progress ?? 10,
     startTime: option.startTime ?? "0:00",
     endTime: option.endTime ?? "0:00",
-    progressColor: option.progressColor ?? "#00BFFF",
-    // Changed to match the blue glow
-    progressBarColor: option.progressBarColor ?? "#2C1D68",
-    // Darker blue for the bar background
-    nameColor: option.nameColor ?? "#FFFFFF",
-    authorColor: option.authorColor ?? "#b3b3b3",
-    timeColor: option.timeColor ?? "#b3b3b3",
+    progressColor: option.progressColor ?? "#00FFFF",
+    // Cyan start of gradient
+    progressGradientEndColor: option.progressGradientEndColor ?? "#FF00FF",
+    // Magenta end of gradient
+    progressBarColor: option.progressBarColor ?? "#29194A",
+    // Dark purple for the bar background
+    nameColor: option.nameColor ?? "#50FFFF",
+    // Bright Cyan
+    authorColor: option.authorColor ?? "#C89CFF",
+    // Lavender
+    timeColor: option.timeColor ?? "#50FFFF",
+    // Bright Cyan
     imageDarkness: option.imageDarkness ?? 0,
-    // Reduced darkness to show more of the image
     paused: option.paused ?? false
   };
   options.progress = Math.max(0, Math.min(100, options.progress));
   const width = 800;
-  const height = 250;
+  const height = 280;
   const canvas = createCanvas(width, height);
   const ctx = canvas.getContext("2d");
   ctx.imageSmoothingEnabled = false;
@@ -116,8 +120,8 @@ var Pixel = async (option) => {
     console.error(e);
   }
   drawSynthwaveBackground(ctx, width, height);
-  const thumbSize = 180;
-  const thumbX = 50;
+  const thumbSize = 200;
+  const thumbX = 40;
   const thumbY = (height - thumbSize) / 2;
   ctx.save();
   roundRect(ctx, thumbX, thumbY, thumbSize, thumbSize, 10);
@@ -142,30 +146,32 @@ var Pixel = async (option) => {
   const textX = thumbX + thumbSize + 30;
   const textAvailableWidth = width - textX - 50;
   ctx.fillStyle = options.nameColor;
-  ctx.font = '30px "PixelFont"';
-  ctx.fillText(options.name, textX, 80, textAvailableWidth);
+  ctx.font = '28px "PixelFont"';
+  const nameLines = options.name.split("\n");
+  let currentY = 80;
+  const lineHeight = 35;
+  nameLines.forEach((line) => {
+    ctx.fillText(line, textX, currentY, textAvailableWidth);
+    currentY += lineHeight;
+  });
   ctx.fillStyle = options.authorColor;
-  ctx.font = '24px "PixelFont"';
-  ctx.fillText(options.author, textX, 125, textAvailableWidth);
-  const progressBarY = 175;
+  ctx.font = '22px "PixelFont"';
+  ctx.fillText(options.author, textX, currentY + 5, textAvailableWidth);
+  const progressBarY = 200;
   const progressBarWidth = textAvailableWidth;
   const progressBarHeight = 8;
-  const progressHandleRadius = 8;
   ctx.fillStyle = options.progressBarColor;
   ctx.beginPath();
   roundRect(ctx, textX, progressBarY - progressBarHeight / 2, progressBarWidth, progressBarHeight, 4);
   ctx.fill();
   const progressWidth = options.progress / 100 * progressBarWidth;
   if (progressWidth > 0) {
-    ctx.fillStyle = options.progressColor;
+    const gradient = ctx.createLinearGradient(textX, 0, textX + progressWidth, 0);
+    gradient.addColorStop(0, options.progressColor);
+    gradient.addColorStop(1, options.progressGradientEndColor);
+    ctx.fillStyle = gradient;
     ctx.beginPath();
     roundRect(ctx, textX, progressBarY - progressBarHeight / 2, progressWidth, progressBarHeight, 4);
-    ctx.fill();
-  }
-  if (!options.paused) {
-    const handleX = Math.max(textX + progressHandleRadius, Math.min(textX + progressWidth, textX + progressBarWidth - progressHandleRadius));
-    ctx.beginPath();
-    ctx.arc(handleX, progressBarY, progressHandleRadius, 0, Math.PI * 2);
     ctx.fill();
   }
   ctx.fillStyle = options.timeColor;

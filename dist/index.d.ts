@@ -6,6 +6,7 @@ type PixelOption = {
     startTime?: string;
     endTime?: string;
     progressColor?: string;
+    progressGradientEndColor?: string;
     progressBarColor?: string;
     nameColor?: string;
     authorColor?: string;

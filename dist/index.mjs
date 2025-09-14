@@ -1,16 +1,22 @@
 // src/index.ts
 import { createCanvas, loadImage, GlobalFonts } from "@napi-rs/canvas";
 import * as path from "path";
-var drawSynthwaveBackground = (ctx, width, height) => {
+var drawAestheticBackground = (ctx, width, height) => {
   const bgColor = "#0A021A";
   const frameGlowColor = "#007BFF";
   const innerPanelColor = "rgba(13, 5, 43, 0.85)";
   const glitchColor1 = "#4D68F8";
   const glitchColor2 = "#F84DF0";
-  const visualizerColor = "#E600E6";
   ctx.fillStyle = bgColor;
   ctx.fillRect(0, 0, width, height);
-  const pixelCount = 50;
+  const gradientCenterX = width / 2;
+  const gradientCenterY = 175;
+  const radialGradient = ctx.createRadialGradient(gradientCenterX, gradientCenterY, 10, gradientCenterX, gradientCenterY, 200);
+  radialGradient.addColorStop(0, "rgba(128, 70, 255, 0.4)");
+  radialGradient.addColorStop(1, "rgba(128, 70, 255, 0)");
+  ctx.fillStyle = radialGradient;
+  ctx.fillRect(0, 0, width, height);
+  const pixelCount = 40;
   const pixelSize = 3;
   for (let i = 0; i < pixelCount; i++) {
     const x = Math.random() * width;
@@ -22,21 +28,12 @@ var drawSynthwaveBackground = (ctx, width, height) => {
   const panelY = 10;
   const panelWidth = width - 40;
   const panelHeight = height - 20;
-  const panelRadius = 15;
+  const panelRadius = 20;
   ctx.save();
   ctx.shadowColor = frameGlowColor;
   ctx.shadowBlur = 15;
   ctx.beginPath();
-  ctx.moveTo(panelX + panelRadius, panelY);
-  ctx.lineTo(panelX + panelWidth - panelRadius, panelY);
-  ctx.quadraticCurveTo(panelX + panelWidth, panelY, panelX + panelWidth, panelY + panelRadius);
-  ctx.lineTo(panelX + panelWidth, panelY + panelHeight - panelRadius);
-  ctx.quadraticCurveTo(panelX + panelWidth, panelY + panelHeight, panelX + panelWidth - panelRadius, panelY + panelHeight);
-  ctx.lineTo(panelX + panelRadius, panelY + panelHeight);
-  ctx.quadraticCurveTo(panelX, panelY + panelHeight, panelX, panelY + panelHeight - panelRadius);
-  ctx.lineTo(panelX, panelY + panelRadius);
-  ctx.quadraticCurveTo(panelX, panelY, panelX + panelRadius, panelY);
-  ctx.closePath();
+  roundRect(ctx, panelX, panelY, panelWidth, panelHeight, panelRadius);
   ctx.strokeStyle = frameGlowColor;
   ctx.lineWidth = 4;
   ctx.stroke();
@@ -46,28 +43,11 @@ var drawSynthwaveBackground = (ctx, width, height) => {
   const innerY = panelY + padding;
   const innerWidth = panelWidth - padding * 2;
   const innerHeight = panelHeight - padding * 2;
-  const innerRadius = 12;
+  const innerRadius = 16;
   ctx.fillStyle = innerPanelColor;
   ctx.beginPath();
-  ctx.moveTo(innerX + innerRadius, innerY);
-  ctx.lineTo(innerX + innerWidth - innerRadius, innerY);
-  ctx.quadraticCurveTo(innerX + innerWidth, innerY, innerX + innerWidth, innerY + innerRadius);
-  ctx.lineTo(innerX + innerWidth, innerY + innerHeight - innerRadius);
-  ctx.quadraticCurveTo(innerX + innerWidth, innerY + innerHeight, innerX + innerWidth - innerRadius, innerY + innerHeight);
-  ctx.lineTo(innerX + innerRadius, innerY + innerHeight);
-  ctx.quadraticCurveTo(innerX, innerY + innerHeight, innerX, innerY + innerHeight - innerRadius);
-  ctx.lineTo(innerX, innerY + innerRadius);
-  ctx.quadraticCurveTo(innerX, innerY, innerX + innerRadius, innerY);
-  ctx.closePath();
+  roundRect(ctx, innerX, innerY, innerWidth, innerHeight, innerRadius);
   ctx.fill();
-  const visualizerX = innerX + innerWidth - 30;
-  const visualizerBaseY = innerY + innerHeight - 20;
-  const barWidth = 4;
-  for (let i = 0; i < 5; i++) {
-    const barHeight = Math.random() * 40 + 10;
-    ctx.fillStyle = visualizerColor;
-    ctx.fillRect(visualizerX + i * (barWidth + 2), visualizerBaseY - barHeight, barWidth, barHeight);
-  }
 };
 function roundRect(ctx, x, y, w, h, r) {
   if (w < 2 * r) r = w / 2;
@@ -90,23 +70,21 @@ var Pixel = async (option) => {
     startTime: option.startTime ?? "0:00",
     endTime: option.endTime ?? "0:00",
     progressColor: option.progressColor ?? "#00FFFF",
-    // Cyan start of gradient
+    // Cyan
     progressGradientEndColor: option.progressGradientEndColor ?? "#FF00FF",
-    // Magenta end of gradient
+    // Magenta
     progressBarColor: option.progressBarColor ?? "#29194A",
-    // Dark purple for the bar background
-    nameColor: option.nameColor ?? "#50FFFF",
-    // Bright Cyan
+    nameColor: option.nameColor ?? "#FFFFFF",
+    // Clean White for title
     authorColor: option.authorColor ?? "#C89CFF",
-    // Lavender
+    // Lavender for artist
     timeColor: option.timeColor ?? "#50FFFF",
-    // Bright Cyan
-    imageDarkness: option.imageDarkness ?? 0,
-    paused: option.paused ?? false
+    // Bright Cyan for time
+    imageDarkness: option.imageDarkness ?? 0
   };
   options.progress = Math.max(0, Math.min(100, options.progress));
-  const width = 800;
-  const height = 280;
+  const width = 450;
+  const height = 550;
   const canvas = createCanvas(width, height);
   const ctx = canvas.getContext("2d");
   ctx.imageSmoothingEnabled = false;
@@ -117,14 +95,14 @@ var Pixel = async (option) => {
     }
   } catch (e) {
     console.error("Font not found. Make sure 'pixel.ttf' is in the 'fonts' folder.");
-    console.error(e);
   }
-  drawSynthwaveBackground(ctx, width, height);
-  const thumbSize = 200;
-  const thumbX = 40;
-  const thumbY = (height - thumbSize) / 2;
+  drawAestheticBackground(ctx, width, height);
+  const centerX = width / 2;
+  const thumbSize = 250;
+  const thumbX = (width - thumbSize) / 2;
+  const thumbY = 50;
   ctx.save();
-  roundRect(ctx, thumbX, thumbY, thumbSize, thumbSize, 10);
+  roundRect(ctx, thumbX, thumbY, thumbSize, thumbSize, 15);
   ctx.clip();
   try {
     const thumbnail = await loadImage(options.thumbnailImage);
@@ -133,54 +111,56 @@ var Pixel = async (option) => {
     ctx.fillStyle = "#333";
     ctx.fillRect(thumbX, thumbY, thumbSize, thumbSize);
     ctx.fillStyle = "#FFF";
-    ctx.font = '30px "PixelFont"';
+    ctx.font = '40px "PixelFont"';
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText("?", thumbX + thumbSize / 2, thumbY + thumbSize / 2);
+    ctx.fillText("?", centerX, thumbY + thumbSize / 2);
   }
   if (options.imageDarkness > 0) {
     ctx.fillStyle = `rgba(0, 0, 0, ${options.imageDarkness})`;
     ctx.fillRect(thumbX, thumbY, thumbSize, thumbSize);
   }
   ctx.restore();
-  const textX = thumbX + thumbSize + 30;
-  const textAvailableWidth = width - textX - 50;
+  ctx.textAlign = "center";
+  ctx.shadowColor = "rgba(0, 0, 0, 0.7)";
+  ctx.shadowBlur = 8;
+  ctx.shadowOffsetX = 2;
+  ctx.shadowOffsetY = 2;
   ctx.fillStyle = options.nameColor;
-  ctx.font = '28px "PixelFont"';
-  const nameLines = options.name.split("\n");
-  let currentY = 80;
-  const lineHeight = 35;
-  nameLines.forEach((line) => {
-    ctx.fillText(line, textX, currentY, textAvailableWidth);
-    currentY += lineHeight;
-  });
+  ctx.font = '32px "PixelFont"';
+  ctx.fillText(options.name, centerX, thumbY + thumbSize + 60, width - 80);
   ctx.fillStyle = options.authorColor;
-  ctx.font = '22px "PixelFont"';
-  ctx.fillText(options.author, textX, currentY + 5, textAvailableWidth);
-  const progressBarY = 200;
-  const progressBarWidth = textAvailableWidth;
+  ctx.font = '24px "PixelFont"';
+  ctx.fillText(options.author, centerX, thumbY + thumbSize + 100, width - 80);
+  ctx.shadowColor = "rgba(0, 0, 0, 0)";
+  ctx.shadowBlur = 0;
+  ctx.shadowOffsetX = 0;
+  ctx.shadowOffsetY = 0;
+  const progressBarWidth = width - 100;
+  const progressBarX = (width - progressBarWidth) / 2;
+  const progressBarY = height - 80;
   const progressBarHeight = 8;
   ctx.fillStyle = options.progressBarColor;
   ctx.beginPath();
-  roundRect(ctx, textX, progressBarY - progressBarHeight / 2, progressBarWidth, progressBarHeight, 4);
+  roundRect(ctx, progressBarX, progressBarY - progressBarHeight / 2, progressBarWidth, progressBarHeight, 4);
   ctx.fill();
   const progressWidth = options.progress / 100 * progressBarWidth;
   if (progressWidth > 0) {
-    const gradient = ctx.createLinearGradient(textX, 0, textX + progressWidth, 0);
+    const gradient = ctx.createLinearGradient(progressBarX, 0, progressBarX + progressBarWidth, 0);
     gradient.addColorStop(0, options.progressColor);
     gradient.addColorStop(1, options.progressGradientEndColor);
     ctx.fillStyle = gradient;
     ctx.beginPath();
-    roundRect(ctx, textX, progressBarY - progressBarHeight / 2, progressWidth, progressBarHeight, 4);
+    roundRect(ctx, progressBarX, progressBarY - progressBarHeight / 2, progressWidth, progressBarHeight, 4);
     ctx.fill();
   }
   ctx.fillStyle = options.timeColor;
-  ctx.font = '20px "PixelFont"';
-  const timeY = progressBarY + 35;
+  ctx.font = '18px "PixelFont"';
+  const timeY = progressBarY + 30;
   ctx.textAlign = "left";
-  ctx.fillText(options.startTime, textX, timeY);
+  ctx.fillText(options.startTime, progressBarX, timeY);
   ctx.textAlign = "right";
-  ctx.fillText(options.endTime, textX + progressBarWidth, timeY);
+  ctx.fillText(options.endTime, progressBarX + progressBarWidth, timeY);
   return canvas.toBuffer("image/png");
 };
 export {

@@ -1,6 +1,6 @@
 {
     "name": "pixel-musicard",
-    "version": "2.0.13",
+    "version": "2.0.14",
     "description": "A custom music card for the Pixel music bot.",
     "main": "./dist/index.js",
     "module": "./dist/index.mjs",
@@ -17,9 +17,8 @@
         "fonts"
     ],
     "scripts": {
-        "build": "tsup src/index.ts --format cjs,esm --dts --clean",
-        "build:watch": "tsup src/index.ts --format cjs,esm --dts --clean --watch
-    },"
+        "build": "tsup src/index.ts --format cjs,esm --dts --clean"
+    },
     "keywords": [
         "musicard",
         "discord",

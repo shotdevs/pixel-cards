@@ -11,7 +11,6 @@ type PixelOption = {
     nameColor?: string;
     authorColor?: string;
     timeColor?: string;
-    imageDarkness?: number;
 };
 declare const Pixel: (option: PixelOption) => Promise<Buffer>;
 

@@ -226,3 +226,4 @@ export const Pixel = async (option: PixelOption): Promise<Buffer> => {
 
     return canvas.toBuffer('image/png');
 };
+export * from './pixel-japanese';

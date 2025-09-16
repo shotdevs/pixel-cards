@@ -112,8 +112,8 @@ export const Pixel = async (option: PixelOption): Promise<Buffer> => {
     drawCosmicBackground(ctx, width, height);
 
     // 2. Define Card Dimensions
-    const cardWidth = 850;
-    const cardHeight = 380;
+    const cardWidth = 1020;
+    const cardHeight = 456;
     const cardX = (width - cardWidth) / 2;
     const cardY = (height - cardHeight) / 2;
     const padding = 35;
@@ -223,6 +223,13 @@ export const Pixel = async (option: PixelOption): Promise<Buffer> => {
     ctx.fillStyle = 'rgba(255,255,255,0.2)';
     ctx.font = '18px "PixelFont"';
     ctx.fillText('M-86', cardX + padding, timeY);
+
+    // 11. Watermark
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'bottom';
+    ctx.font = '22px "PixelFont"';
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+    ctx.fillText('by pixel music', width - padding, height - padding + 15);
 
     return canvas.toBuffer('image/png');
 };

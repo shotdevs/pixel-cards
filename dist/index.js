@@ -243,8 +243,8 @@ var Pixel = async (option) => {
     console.error("Font not found. Make sure 'pixel.ttf' is in the 'fonts' folder.");
   }
   drawCosmicBackground(ctx, width, height);
-  const cardWidth = 850;
-  const cardHeight = 380;
+  const cardWidth = 1020;
+  const cardHeight = 456;
   const cardX = (width - cardWidth) / 2;
   const cardY = (height - cardHeight) / 2;
   const padding = 35;
@@ -329,6 +329,11 @@ var Pixel = async (option) => {
   ctx.fillStyle = "rgba(255,255,255,0.2)";
   ctx.font = '18px "PixelFont"';
   ctx.fillText("M-86", cardX + padding, timeY);
+  ctx.textAlign = "right";
+  ctx.textBaseline = "bottom";
+  ctx.font = '22px "PixelFont"';
+  ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
+  ctx.fillText("by pixel music", width - padding, height - padding + 15);
   return canvas.toBuffer("image/png");
 };
 // Annotate the CommonJS export names for ESM import in node:

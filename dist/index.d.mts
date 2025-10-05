@@ -46,7 +46,22 @@ interface GuildStats {
     totalMessages: number;
     totalVoiceTime: number;
     activeUsers: number;
+    boostLevel: number;
+    totalRoles: number;
+    totalChannels: number;
+    totalEmojis: number;
+    totalStickers: number;
+    totalBans: number;
+    totalInvites: number;
     topUsers: Array<{
+        userId: string;
+        username: string;
+        level: number;
+        totalExp: number;
+        voiceTime: number;
+        messages: number;
+    }>;
+    topVoiceUsers: Array<{
         userId: string;
         username: string;
         level: number;

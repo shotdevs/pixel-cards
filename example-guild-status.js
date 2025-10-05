@@ -3,6 +3,15 @@ const { GuildStatus, DatabaseHelper } = require('./dist/index.js');
 
 // Mock database data (replace with your actual database)
 const mockDatabase = {
+    guild: {
+        boostLevel: 2,
+        totalRoles: 25,
+        totalChannels: 30,
+        totalEmojis: 45,
+        totalStickers: 15,
+        totalBans: 5,
+        totalInvites: 100
+    },
     temp_channels: [],
     users: {
         '123456789012345678': {
@@ -119,11 +128,20 @@ async function generateGuildStatus() {
         const dbHelper = new DatabaseHelper(mockDatabase);
         
         // Get guild statistics
-        const guildStats = dbHelper.getGuildStats(150, 45); // 150 total members, 45 online
+        const guildStats = {
+            ...dbHelper.getGuildStats(150, 45), // 150 total members, 45 online
+            boostLevel: mockDatabase.guild.boostLevel,
+            totalRoles: mockDatabase.guild.totalRoles,
+            totalChannels: mockDatabase.guild.totalChannels,
+            totalEmojis: mockDatabase.guild.totalEmojis,
+            totalStickers: mockDatabase.guild.totalStickers,
+            totalBans: mockDatabase.guild.totalBans,
+            totalInvites: mockDatabase.guild.totalInvites
+        };
         
         // Generate guild status image
         const imageBuffer = await GuildStatus({
-            guildName: 'My Awesome Discord Server',
+            guildName: 'shottttt',
             guildIcon: 'https://cdn.discordapp.com/icons/123456789012345678/icon_hash.png',
             stats: guildStats,
             theme: 'dark',

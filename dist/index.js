@@ -274,52 +274,74 @@ var drawStatCard = (ctx, x, y, width, height, title, value, icon, color) => {
   ctx.lineWidth = 1;
   roundRect2(ctx, x, y, width, height, 12).stroke();
   ctx.fillStyle = color;
-  ctx.font = "24px Arial";
+  ctx.font = '18px "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", "Twemoji", "EmojiOne Color", sans-serif';
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.fillText(icon, x + 30, y + 30);
+  ctx.fillText(icon, x + 20, y + 20);
   ctx.fillStyle = GUILD_PALETTE.TEXT_SECONDARY;
-  ctx.font = "14px Arial";
+  ctx.font = "11px Arial";
   ctx.textAlign = "left";
-  ctx.fillText(title, x + 60, y + 25);
+  ctx.fillText(title, x + 45, y + 18);
   ctx.fillStyle = GUILD_PALETTE.TEXT_PRIMARY;
-  ctx.font = "bold 20px Arial";
-  ctx.fillText(value, x + 60, y + 50);
+  ctx.font = "bold 16px Arial";
+  ctx.fillText(value, x + 45, y + 38);
 };
-var drawTopUsers = (ctx, x, y, width, users) => {
-  const cardHeight = 150;
+var drawTopVoiceMembers = (ctx, x, y, width, users) => {
+  const cardHeight = 130;
   ctx.fillStyle = GUILD_PALETTE.CARD_BG;
   roundRect2(ctx, x, y, width, cardHeight, 12).fill();
   ctx.strokeStyle = GUILD_PALETTE.CARD_BORDER;
   ctx.lineWidth = 1;
   roundRect2(ctx, x, y, width, cardHeight, 12).stroke();
   ctx.fillStyle = GUILD_PALETTE.TEXT_PRIMARY;
-  ctx.font = "bold 18px Arial";
+  ctx.font = "bold 14px Arial";
   ctx.textAlign = "left";
-  ctx.fillText("Top Members", x + 20, y + 30);
+  ctx.fillText("Top Voice Members", x + 15, y + 25);
   const userHeight = 30;
-  const startY = y + 50;
+  const startY = y + 40;
   const columnWidth = (width - 40) / 2;
   const usersPerColumn = 2;
   users.slice(0, 4).forEach((user, index) => {
     const column = Math.floor(index / usersPerColumn);
     const row = index % usersPerColumn;
-    const userX = x + 20 + column * columnWidth;
+    const userX = x + 15 + column * columnWidth;
     const userY = startY + row * userHeight;
-    ctx.fillStyle = GUILD_PALETTE.TEXT_MUTED;
-    ctx.font = "14px Arial";
-    ctx.textAlign = "center";
-    ctx.fillText(`${index + 1}`, userX + 20, userY + 15);
     ctx.fillStyle = GUILD_PALETTE.TEXT_PRIMARY;
-    ctx.font = "14px Arial";
+    ctx.font = "11px Arial";
     ctx.textAlign = "left";
-    const maxWidth = columnWidth - 100;
-    const username = user.username.length > 18 ? user.username.substring(0, 15) + "..." : user.username;
-    ctx.fillText(username, userX + 50, userY + 15);
-    ctx.fillStyle = GUILD_PALETTE.SECONDARY;
-    ctx.font = "12px Arial";
-    ctx.textAlign = "right";
-    ctx.fillText(`Lv.${user.level}`, userX + columnWidth - 20, userY + 15);
+    const username = user.username.length > 8 ? user.username.substring(0, 6) + "..." : user.username;
+    const voiceTimeFormatted = formatDuration(user.voiceTime);
+    const fullText = `${index + 1}. ${username} (${voiceTimeFormatted})`;
+    ctx.fillText(fullText, userX, userY + 15);
+  });
+};
+var drawTopUsers = (ctx, x, y, width, users) => {
+  const cardHeight = 130;
+  ctx.fillStyle = GUILD_PALETTE.CARD_BG;
+  roundRect2(ctx, x, y, width, cardHeight, 12).fill();
+  ctx.strokeStyle = GUILD_PALETTE.CARD_BORDER;
+  ctx.lineWidth = 1;
+  roundRect2(ctx, x, y, width, cardHeight, 12).stroke();
+  ctx.fillStyle = GUILD_PALETTE.TEXT_PRIMARY;
+  ctx.font = "bold 14px Arial";
+  ctx.textAlign = "left";
+  ctx.fillText("Top Members", x + 15, y + 25);
+  const userHeight = 30;
+  const startY = y + 40;
+  const columnWidth = (width - 40) / 2;
+  const usersPerColumn = 2;
+  users.slice(0, 4).forEach((user, index) => {
+    const column = Math.floor(index / usersPerColumn);
+    const row = index % usersPerColumn;
+    const userX = x + 15 + column * columnWidth;
+    const userY = startY + row * userHeight;
+    ctx.fillStyle = GUILD_PALETTE.TEXT_PRIMARY;
+    ctx.font = "11px Arial";
+    ctx.textAlign = "left";
+    const username = user.username.length > 8 ? user.username.substring(0, 6) + "..." : user.username;
+    const levelText = ` (Lv ${user.level})`;
+    const fullText = `${index + 1}. ${username}${levelText}`;
+    ctx.fillText(fullText, userX, userY + 15);
   });
 };
 var GuildStatus = async (options) => {
@@ -331,8 +353,8 @@ var GuildStatus = async (options) => {
     showTopUsers = true,
     customBackground
   } = options;
-  const width = 800;
-  const height = 600;
+  const width = 600;
+  const height = 450;
   const canvas = (0, import_canvas2.createCanvas)(width, height);
   const ctx = canvas.getContext("2d");
   ctx.imageSmoothingEnabled = true;
@@ -354,27 +376,27 @@ var GuildStatus = async (options) => {
   } else {
     drawGradientBackground(ctx, width, height, theme);
   }
-  const headerHeight = 100;
-  const iconSize = 60;
-  const iconX = 30;
-  const iconY = 20;
+  const headerHeight = 80;
+  const iconSize = 45;
+  const iconX = 20;
+  const iconY = 15;
   await drawServerIcon(ctx, iconX, iconY, iconSize, guildIcon);
   ctx.fillStyle = GUILD_PALETTE.TEXT_PRIMARY;
-  ctx.font = "bold 28px Arial";
+  ctx.font = "bold 20px Arial";
   ctx.textAlign = "left";
-  ctx.fillText(guildName, iconX + iconSize + 20, iconY + 25);
+  ctx.fillText(guildName, iconX + iconSize + 15, iconY + 20);
   ctx.fillStyle = GUILD_PALETTE.TEXT_SECONDARY;
-  ctx.font = "16px Arial";
+  ctx.font = "12px Arial";
   ctx.fillText(
     `${formatNumber(stats.totalMembers)} members \u2022 ${formatNumber(stats.onlineMembers)} online`,
-    iconX + iconSize + 20,
-    iconY + 55
+    iconX + iconSize + 15,
+    iconY + 40
   );
-  const cardWidth = 180;
-  const cardHeight = 80;
-  const cardSpacing = 20;
-  const cardsStartX = 30;
-  const cardsStartY = 140;
+  const cardWidth = 130;
+  const cardHeight = 60;
+  const cardSpacing = 15;
+  const cardsStartX = 20;
+  const cardsStartY = 120;
   drawStatCard(
     ctx,
     cardsStartX,
@@ -410,8 +432,8 @@ var GuildStatus = async (options) => {
   );
   drawStatCard(
     ctx,
-    cardsStartX,
-    cardsStartY + cardHeight + cardSpacing,
+    cardsStartX + (cardWidth + cardSpacing) * 3,
+    cardsStartY,
     cardWidth,
     cardHeight,
     "Voice Time",
@@ -421,7 +443,7 @@ var GuildStatus = async (options) => {
   );
   drawStatCard(
     ctx,
-    cardsStartX + cardWidth + cardSpacing,
+    cardsStartX,
     cardsStartY + cardHeight + cardSpacing,
     cardWidth,
     cardHeight,
@@ -430,11 +452,48 @@ var GuildStatus = async (options) => {
     "\u2B50",
     GUILD_PALETTE.DANGER
   );
-  if (showTopUsers && stats.topUsers.length > 0) {
-    const topUsersWidth = width - 60;
-    const topUsersX = 30;
-    const topUsersY = 350;
-    drawTopUsers(ctx, topUsersX, topUsersY, topUsersWidth, stats.topUsers);
+  drawStatCard(
+    ctx,
+    cardsStartX + cardWidth + cardSpacing,
+    cardsStartY + cardHeight + cardSpacing,
+    cardWidth,
+    cardHeight,
+    "Boost Level",
+    `Level ${stats.boostLevel}`,
+    "\u{1F680}",
+    "#f47fff"
+  );
+  drawStatCard(
+    ctx,
+    cardsStartX + (cardWidth + cardSpacing) * 2,
+    cardsStartY + cardHeight + cardSpacing,
+    cardWidth,
+    cardHeight,
+    "Channels",
+    formatNumber(stats.totalChannels),
+    "\u{1F4D1}",
+    GUILD_PALETTE.PRIMARY
+  );
+  drawStatCard(
+    ctx,
+    cardsStartX + (cardWidth + cardSpacing) * 3,
+    cardsStartY + cardHeight + cardSpacing,
+    cardWidth,
+    cardHeight,
+    "Emojis",
+    formatNumber(stats.totalEmojis),
+    "\u{1F604}",
+    "#ffac33"
+  );
+  if (showTopUsers && (stats.topUsers.length > 0 || stats.topVoiceUsers.length > 0)) {
+    const sectionWidth = (width - 50) / 2;
+    const sectionY = 280;
+    if (stats.topUsers.length > 0) {
+      drawTopUsers(ctx, 20, sectionY, sectionWidth, stats.topUsers);
+    }
+    if (stats.topVoiceUsers.length > 0) {
+      drawTopVoiceMembers(ctx, 20 + sectionWidth + 10, sectionY, sectionWidth, stats.topVoiceUsers);
+    }
   }
   const footerY = height - 30;
   ctx.fillStyle = GUILD_PALETTE.TEXT_MUTED;
@@ -460,13 +519,37 @@ var createGuildStats = (users, totalMembers, onlineMembers) => {
     voiceTime: user.voiceTime.total,
     messages: user.messages.total
   })).sort((a, b) => b.level - a.level).slice(0, 10);
+  const topVoiceUsers = userEntries.map(([userId, user]) => ({
+    userId,
+    username: `User${userId.slice(-4)}`,
+    // Placeholder username
+    level: user.level,
+    totalExp: user.totalExp,
+    voiceTime: user.voiceTime.total,
+    messages: user.messages.total
+  })).sort((a, b) => b.voiceTime - a.voiceTime).slice(0, 10);
   return {
     totalMembers,
     onlineMembers,
     totalMessages,
     totalVoiceTime,
     activeUsers,
-    topUsers
+    boostLevel: 0,
+    // Default value - should be provided by Discord API
+    totalRoles: 0,
+    // Default value - should be provided by Discord API
+    totalChannels: 0,
+    // Default value - should be provided by Discord API
+    totalEmojis: 0,
+    // Default value - should be provided by Discord API
+    totalStickers: 0,
+    // Default value - should be provided by Discord API
+    totalBans: 0,
+    // Default value - should be provided by Discord API
+    totalInvites: 0,
+    // Default value - should be provided by Discord API
+    topUsers,
+    topVoiceUsers
   };
 };
 
@@ -552,13 +635,29 @@ var DatabaseHelper = class {
     const totalVoiceTime = this.getTotalVoiceTime();
     const activeUsers = this.getActiveUsers();
     const topUsers = this.getTopUsersByLevel(10);
+    const topVoiceUsers = this.getTopUsersByVoiceTime(10);
     return {
       totalMembers: totalMembersCount,
       onlineMembers: onlineMembersCount,
       totalMessages,
       totalVoiceTime,
       activeUsers,
-      topUsers
+      boostLevel: 0,
+      // Default value - should be provided by Discord API
+      totalRoles: 0,
+      // Default value - should be provided by Discord API
+      totalChannels: 0,
+      // Default value - should be provided by Discord API
+      totalEmojis: 0,
+      // Default value - should be provided by Discord API
+      totalStickers: 0,
+      // Default value - should be provided by Discord API
+      totalBans: 0,
+      // Default value - should be provided by Discord API
+      totalInvites: 0,
+      // Default value - should be provided by Discord API
+      topUsers,
+      topVoiceUsers
     };
   }
   // Get user statistics for a specific user

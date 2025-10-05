@@ -1,6 +1,6 @@
 {
     "name": "pixel-musicard",
-    "version": "3.0.3",
+    "version": "3.0.5",
     "description": "A custom music card and Discord server status generator for the Pixel music bot.",
     "main": "./dist/index.js",
     "module": "./dist/index.mjs",

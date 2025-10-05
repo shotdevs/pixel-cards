@@ -132,6 +132,7 @@ export class DatabaseHelper {
         const totalVoiceTime = this.getTotalVoiceTime();
         const activeUsers = this.getActiveUsers();
         const topUsers = this.getTopUsersByLevel(10);
+        const topVoiceUsers = this.getTopUsersByVoiceTime(10);
 
         return {
             totalMembers: totalMembersCount,
@@ -139,7 +140,15 @@ export class DatabaseHelper {
             totalMessages,
             totalVoiceTime,
             activeUsers,
-            topUsers
+            boostLevel: 0, // Default value - should be provided by Discord API
+            totalRoles: 0, // Default value - should be provided by Discord API
+            totalChannels: 0, // Default value - should be provided by Discord API
+            totalEmojis: 0, // Default value - should be provided by Discord API
+            totalStickers: 0, // Default value - should be provided by Discord API
+            totalBans: 0, // Default value - should be provided by Discord API
+            totalInvites: 0, // Default value - should be provided by Discord API
+            topUsers,
+            topVoiceUsers
         };
     }
 

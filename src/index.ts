@@ -236,3 +236,4 @@ export const Pixel = async (option: PixelOption): Promise<Buffer> => {
 export * from './pixel-japanese';
 export * from './guild-status';
 export * from './database-helper';
+export * from './user-card';

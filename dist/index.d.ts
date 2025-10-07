@@ -152,6 +152,77 @@ declare class DatabaseHelper {
     }>;
 }
 
+interface UserInfo {
+    avatar: string;
+    displayName: string;
+    username: string;
+    customStatus?: {
+        emoji: string;
+        text: string;
+    };
+}
+interface AccountDetail {
+    label: string;
+    value: string;
+}
+interface ServerRank {
+    category: string;
+    rank: string;
+}
+interface Statistic {
+    period: string;
+    value: string;
+}
+interface RankedItem {
+    rank: number;
+    type: 'text-channel' | 'voice-channel' | 'application';
+    icon: string;
+    name: string | null;
+    value: string;
+}
+interface ChartLegend {
+    label: string;
+    color: string;
+}
+interface ChartData {
+    message: number[];
+    voice: number[];
+}
+interface Panel {
+    id: string;
+    title: string;
+    icon: string;
+    type: 'list' | 'statistics' | 'rankedList' | 'graph';
+    items?: (ServerRank | RankedItem)[];
+    stats?: Statistic[];
+    legend?: ChartLegend[];
+    data?: ChartData;
+}
+interface UserCardOptions {
+    theme?: 'dark' | 'light';
+    font?: 'sans-serif' | 'serif' | 'monospace';
+    backgroundColor?: string;
+    container: {
+        header: {
+            userInfo: UserInfo;
+            accountDetails: AccountDetail[];
+        };
+        body: {
+            layout: 'grid' | 'list';
+            panels: Panel[];
+        };
+        footer: {
+            lookbackPeriod: string;
+            timezone: string;
+            attribution: {
+                text: string;
+                logo: string;
+            };
+        };
+    };
+}
+declare const UserCard: (options: UserCardOptions) => Promise<Buffer>;
+
 type PixelOption = {
     name: string;
     author: string;
@@ -162,4 +233,4 @@ type PixelOption = {
 };
 declare const Pixel: (option: PixelOption) => Promise<Buffer>;
 
-export { type ActivityData, type Database, DatabaseHelper, type GuildStats, GuildStatus, type GuildStatusOptions, type MessageData, Pixel, PixelJapanese, type PixelOption, type UserData, type VoiceSession, type VoiceTimeData, createGuildStats };
+export { type AccountDetail, type ActivityData, type ChartData, type ChartLegend, type Database, DatabaseHelper, type GuildStats, GuildStatus, type GuildStatusOptions, type MessageData, type Panel, Pixel, PixelJapanese, type PixelOption, type RankedItem, type ServerRank, type Statistic, UserCard, type UserCardOptions, type UserData, type UserInfo, type VoiceSession, type VoiceTimeData, createGuildStats };

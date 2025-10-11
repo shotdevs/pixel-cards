@@ -821,9 +821,6 @@ var drawPanel = (ctx, x, y, width, height, panel) => {
     case "rankedList":
       drawRankedListPanel(ctx, contentX, contentStartY, contentWidth, panel.items);
       break;
-    case "graph":
-      drawGraphPanel(ctx, contentX, contentStartY, contentWidth, height - 50, panel.legend, panel.data);
-      break;
   }
 };
 var drawListPanel = (ctx, x, y, width, items) => {
@@ -874,35 +871,6 @@ var drawRankedListPanel = (ctx, x, y, width, items) => {
     ctx.font = "10px Arial";
     ctx.textAlign = "right";
     ctx.fillText(item.value, x + width, itemY + 15);
-  });
-};
-var drawGraphPanel = (ctx, x, y, width, height, legend, data) => {
-  const graphHeight = height - 30;
-  const graphY = y + 20;
-  const graphWidth = width - 20;
-  legend.forEach((item, index) => {
-    const legendX = x + index * 80;
-    const legendY = y + 5;
-    ctx.fillStyle = item.color === "green" ? USER_CARD_PALETTE.SECONDARY : "#ff69b4";
-    ctx.fillRect(legendX, legendY, 10, 10);
-    ctx.fillStyle = USER_CARD_PALETTE.TEXT_SECONDARY;
-    ctx.font = "10px Arial";
-    ctx.textAlign = "left";
-    ctx.fillText(item.label, legendX + 15, legendY + 8);
-  });
-  const barWidth = graphWidth / data.message.length;
-  const maxValue = Math.max(...data.message, ...data.voice);
-  data.message.forEach((value, index) => {
-    const barX = x + 10 + index * barWidth;
-    const barHeight = value / maxValue * graphHeight;
-    const barY = graphY + graphHeight - barHeight;
-    ctx.fillStyle = USER_CARD_PALETTE.SECONDARY;
-    ctx.fillRect(barX, barY, barWidth * 0.4, barHeight);
-    const voiceValue = data.voice[index] || 0;
-    const voiceHeight = voiceValue / maxValue * graphHeight;
-    const voiceY = graphY + graphHeight - voiceHeight;
-    ctx.fillStyle = "#ff69b4";
-    ctx.fillRect(barX + barWidth * 0.4, voiceY, barWidth * 0.4, voiceHeight);
   });
 };
 var UserCard = async (options) => {

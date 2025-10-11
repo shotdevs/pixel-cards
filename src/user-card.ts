@@ -64,25 +64,14 @@ export interface RankedItem {
     value: string;
 }
 
-export interface ChartLegend {
-    label: string;
-    color: string;
-}
-
-export interface ChartData {
-    message: number[];
-    voice: number[];
-}
 
 export interface Panel {
     id: string;
     title: string;
     icon: string;
-    type: 'list' | 'statistics' | 'rankedList' | 'graph';
+    type: 'list' | 'statistics' | 'rankedList';
     items?: (ServerRank | RankedItem)[];
     stats?: Statistic[];
-    legend?: ChartLegend[];
-    data?: ChartData;
 }
 
 export interface UserCardOptions {
@@ -207,9 +196,6 @@ const drawPanel = (ctx: any, x: number, y: number, width: number, height: number
         case 'rankedList':
             drawRankedListPanel(ctx, contentX, contentStartY, contentWidth, panel.items as RankedItem[]);
             break;
-        case 'graph':
-            drawGraphPanel(ctx, contentX, contentStartY, contentWidth, height - 50, panel.legend as ChartLegend[], panel.data as ChartData);
-            break;
     }
 };
 
@@ -286,50 +272,6 @@ const drawRankedListPanel = (ctx: any, x: number, y: number, width: number, item
     });
 };
 
-// Draw graph panel
-const drawGraphPanel = (ctx: any, x: number, y: number, width: number, height: number, legend: ChartLegend[], data: ChartData) => {
-    const graphHeight = height - 30;
-    const graphY = y + 20;
-    const graphWidth = width - 20;
-    
-    // Draw legend
-    legend.forEach((item, index) => {
-        const legendX = x + (index * 80);
-        const legendY = y + 5;
-        
-        // Color indicator
-        ctx.fillStyle = item.color === 'green' ? USER_CARD_PALETTE.SECONDARY : '#ff69b4';
-        ctx.fillRect(legendX, legendY, 10, 10);
-        
-        // Label
-        ctx.fillStyle = USER_CARD_PALETTE.TEXT_SECONDARY;
-        ctx.font = '10px Arial';
-        ctx.textAlign = 'left';
-        ctx.fillText(item.label, legendX + 15, legendY + 8);
-    });
-    
-    // Draw simple bar chart
-    const barWidth = graphWidth / data.message.length;
-    const maxValue = Math.max(...data.message, ...data.voice);
-    
-    data.message.forEach((value, index) => {
-        const barX = x + 10 + (index * barWidth);
-        const barHeight = (value / maxValue) * graphHeight;
-        const barY = graphY + graphHeight - barHeight;
-        
-        // Message bar
-        ctx.fillStyle = USER_CARD_PALETTE.SECONDARY;
-        ctx.fillRect(barX, barY, barWidth * 0.4, barHeight);
-        
-        // Voice bar
-        const voiceValue = data.voice[index] || 0;
-        const voiceHeight = (voiceValue / maxValue) * graphHeight;
-        const voiceY = graphY + graphHeight - voiceHeight;
-        
-        ctx.fillStyle = '#ff69b4';
-        ctx.fillRect(barX + barWidth * 0.4, voiceY, barWidth * 0.4, voiceHeight);
-    });
-};
 
 // Main user card generator
 export const UserCard = async (options: UserCardOptions): Promise<Buffer> => {

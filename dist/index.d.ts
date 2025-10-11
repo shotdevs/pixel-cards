@@ -180,23 +180,13 @@ interface RankedItem {
     name: string | null;
     value: string;
 }
-interface ChartLegend {
-    label: string;
-    color: string;
-}
-interface ChartData {
-    message: number[];
-    voice: number[];
-}
 interface Panel {
     id: string;
     title: string;
     icon: string;
-    type: 'list' | 'statistics' | 'rankedList' | 'graph';
+    type: 'list' | 'statistics' | 'rankedList';
     items?: (ServerRank | RankedItem)[];
     stats?: Statistic[];
-    legend?: ChartLegend[];
-    data?: ChartData;
 }
 interface UserCardOptions {
     theme?: 'dark' | 'light';
@@ -233,4 +223,4 @@ type PixelOption = {
 };
 declare const Pixel: (option: PixelOption) => Promise<Buffer>;
 
-export { type AccountDetail, type ActivityData, type ChartData, type ChartLegend, type Database, DatabaseHelper, type GuildStats, GuildStatus, type GuildStatusOptions, type MessageData, type Panel, Pixel, PixelJapanese, type PixelOption, type RankedItem, type ServerRank, type Statistic, UserCard, type UserCardOptions, type UserData, type UserInfo, type VoiceSession, type VoiceTimeData, createGuildStats };
+export { type AccountDetail, type ActivityData, type Database, DatabaseHelper, type GuildStats, GuildStatus, type GuildStatusOptions, type MessageData, type Panel, Pixel, PixelJapanese, type PixelOption, type RankedItem, type ServerRank, type Statistic, UserCard, type UserCardOptions, type UserData, type UserInfo, type VoiceSession, type VoiceTimeData, createGuildStats };

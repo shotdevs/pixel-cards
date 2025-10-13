@@ -213,6 +213,18 @@ interface UserCardOptions {
 }
 declare const UserCard: (options: UserCardOptions) => Promise<Buffer>;
 
+interface WelcomeCardOptions {
+    username: string;
+    avatar: string;
+    guildName: string;
+    memberCount: number;
+    joinDate?: string;
+    joinTime?: string;
+    guildPosition?: number;
+    discriminator?: string;
+}
+declare const WelcomeCard: (options: WelcomeCardOptions) => Promise<Buffer>;
+
 type PixelOption = {
     name: string;
     author: string;
@@ -223,4 +235,4 @@ type PixelOption = {
 };
 declare const Pixel: (option: PixelOption) => Promise<Buffer>;
 
-export { type AccountDetail, type ActivityData, type Database, DatabaseHelper, type GuildStats, GuildStatus, type GuildStatusOptions, type MessageData, type Panel, Pixel, PixelJapanese, type PixelOption, type RankedItem, type ServerRank, type Statistic, UserCard, type UserCardOptions, type UserData, type UserInfo, type VoiceSession, type VoiceTimeData, createGuildStats };
+export { type AccountDetail, type ActivityData, type Database, DatabaseHelper, type GuildStats, GuildStatus, type GuildStatusOptions, type MessageData, type Panel, Pixel, PixelJapanese, type PixelOption, type RankedItem, type ServerRank, type Statistic, UserCard, type UserCardOptions, type UserData, type UserInfo, type VoiceSession, type VoiceTimeData, WelcomeCard, type WelcomeCardOptions, createGuildStats };

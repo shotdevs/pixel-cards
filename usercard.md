@@ -5,7 +5,7 @@ The User Card feature generates a customizable Discord-style profile card that d
 ## Usage Example
 
 ```javascript
-const { UserCard } = require('pixel-musicard');
+const { UserCard } = require('pixel-cards');
 
 const userCardOptions = {
     theme: 'dark',

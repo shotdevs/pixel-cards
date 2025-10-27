@@ -14,16 +14,16 @@ A Discord server activity image generator for the Ghost X Bot, similar to the ex
 
 ## Installation
 
-The guild status functionality is included in the pixel-musicard package. No additional installation required.
+The guild status functionality is included in the pixel-cards package. No additional installation required.
 
 ```bash
-npm install pixel-musicard
+npm install pixel-cards
 ```
 
 ## Quick Start
 
 ```typescript
-import { GuildStatus, DatabaseHelper, createGuildStats } from 'pixel-musicard';
+import { GuildStatus, DatabaseHelper, createGuildStats } from 'pixel-cards';
 
 // Initialize database helper
 const dbHelper = new DatabaseHelper(client.db);
@@ -137,7 +137,7 @@ interface UserData {
 ### Basic Server Status
 
 ```typescript
-import { GuildStatus, DatabaseHelper } from 'pixel-musicard';
+import { GuildStatus, DatabaseHelper } from 'pixel-cards';
 
 // In your Discord bot command
 const dbHelper = new DatabaseHelper(client.db);
@@ -206,7 +206,7 @@ const topMessageUsers = dbHelper.getLeaderboard('messages', 15);
 ```typescript
 // Slash command for server status
 const { SlashCommandBuilder } = require('discord.js');
-const { GuildStatus, DatabaseHelper } = require('pixel-musicard');
+const { GuildStatus, DatabaseHelper } = require('pixel-cards');
 
 module.exports = {
     data: new SlashCommandBuilder()

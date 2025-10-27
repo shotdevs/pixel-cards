@@ -14,7 +14,7 @@ A stunning cyberpunk-themed welcome card generator for Discord bots. Perfect for
 ## Installation
 
 ```bash
-npm install pixel-musicard
+npm install pixel-cards
 ```
 
 ## Usage
@@ -22,7 +22,7 @@ npm install pixel-musicard
 ### Basic Example
 
 ```javascript
-const { WelcomeCard } = require('pixel-musicard');
+const { WelcomeCard } = require('pixel-cards');
 const fs = require('fs');
 
 async function createWelcomeCard() {
@@ -46,7 +46,7 @@ createWelcomeCard();
 
 ```javascript
 const { Client, GatewayIntentBits, AttachmentBuilder } = require('discord.js');
-const { WelcomeCard } = require('pixel-musicard');
+const { WelcomeCard } = require('pixel-cards');
 
 const client = new Client({
     intents: [
@@ -249,8 +249,8 @@ GPL-3.0-only
 ## Support
 
 For issues, questions, or contributions, please visit:
-- GitHub: [SHIBINSOJU/pixel-musicard](https://github.com/SHIBINSOJU/pixel-musicard)
-- Issues: [Report a bug](https://github.com/SHIBINSOJU/pixel-musicard/issues)
+- GitHub: [shotdevs/pixel-cards](https://github.com/shotdevs/pixel-cards)
+- Issues: [Report a bug](https://github.com/shotdevs/pixel-cards/issues)
 
 ## Credits
 
@@ -258,4 +258,4 @@ Created by **shotxd01** for the Ghost X Bot project.
 
 ---
 
-**Note**: This welcome card generator is part of the `pixel-musicard` package, which includes multiple Discord card generators with cyberpunk and modern aesthetics.
+**Note**: This welcome card generator is part of the `pixel-cards` package, which includes multiple Discord card generators with cyberpunk and modern aesthetics.

@@ -1,5 +1,5 @@
 {
-    "name": "pixel-musicard",
+    "name": "pixel-cards",
     "version": "3.0.9",
     "description": "A custom music card and Discord server status generator for the Pixel music bot.",
     "main": "./dist/index.js",
@@ -40,7 +40,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/SHIBINSOJU/pixel-musicard"
+        "url": "https://github.com/shotdevs/pixel-cards"
     },
     "dependencies": {
         "@napi-rs/canvas": "^0.1.51"

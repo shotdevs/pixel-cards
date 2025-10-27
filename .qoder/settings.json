@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "ask": [
+      "Read(!/workspaces/pixel-cards/**)",
+      "Edit(!/workspaces/pixel-cards/**)"
+    ],
+    "allow": [
+      "Read(/workspaces/pixel-cards/**)",
+      "Edit(/workspaces/pixel-cards/**)"
+    ]
+  },
+  "memoryImport": {},
+  "monitoring": {}
+}

@@ -75,6 +75,13 @@ export type PixelOption = {
     progress?: number;
     startTime?: string;
     endTime?: string;
+    backgroundColor?: string;
+    backgroundImage?: string;
+    progressColor?: string;
+    progressBarColor?: string;
+    titleColor?: string;
+    artistColor?: string;
+    timeColor?: string;
 };
 
 
@@ -86,6 +93,13 @@ export const Pixel = async (option: PixelOption): Promise<Buffer> => {
         progress: option.progress ?? 10,
         startTime: option.startTime ?? '0:00',
         endTime: option.endTime ?? '0:00',
+        backgroundColor: option.backgroundColor,
+        backgroundImage: option.backgroundImage,
+        progressColor: option.progressColor ?? PALETTE.PROGRESS_ACTIVE,
+        progressBarColor: option.progressBarColor ?? PALETTE.PROGRESS_BG,
+        titleColor: option.titleColor ?? PALETTE.TITLE,
+        artistColor: option.artistColor ?? PALETTE.ARTIST,
+        timeColor: option.timeColor ?? PALETTE.TIME,
     };
     options.progress = Math.max(0, Math.min(100, options.progress));
 
@@ -109,7 +123,19 @@ export const Pixel = async (option: PixelOption): Promise<Buffer> => {
     // --- DRAWING SEQUENCE ---
 
     // 1. Draw Background
-    drawCosmicBackground(ctx, width, height);
+    if (options.backgroundImage) {
+        try {
+            const bgImage = await loadImage(options.backgroundImage);
+            ctx.drawImage(bgImage, 0, 0, width, height);
+        } catch (e) {
+            drawCosmicBackground(ctx, width, height);
+        }
+    } else if (options.backgroundColor) {
+        ctx.fillStyle = options.backgroundColor;
+        ctx.fillRect(0, 0, width, height);
+    } else {
+        drawCosmicBackground(ctx, width, height);
+    }
 
     // 2. Define Card Dimensions
     const cardWidth = 1020;
@@ -167,12 +193,12 @@ export const Pixel = async (option: PixelOption): Promise<Buffer> => {
     ctx.font = '52px "PixelFont"';
     ctx.fillStyle = 'rgba(0,0,0,0.3)';
     ctx.fillText(options.name, textX + 2, thumbY + 25 + 2, textWidth); // Shadow
-    ctx.fillStyle = PALETTE.TITLE;
+    ctx.fillStyle = options.titleColor;
     ctx.fillText(options.name, textX, thumbY + 25, textWidth); // Main Text
 
     // Artist
     ctx.font = '32px "PixelFont"';
-    ctx.fillStyle = PALETTE.ARTIST;
+    ctx.fillStyle = options.artistColor;
     ctx.fillText(options.author, textX, thumbY + 95, textWidth);
 
     // 8. Draw Segmented Progress Bar
@@ -185,12 +211,12 @@ export const Pixel = async (option: PixelOption): Promise<Buffer> => {
     for (let i = 0; i < numSegments; i++) {
         const segX = textX + i * (segmentWidth + segmentGap);
         // Draw background segment
-        ctx.fillStyle = PALETTE.PROGRESS_BG;
+        ctx.fillStyle = options.progressBarColor;
         ctx.fillRect(segX, progressY, segmentWidth, 24);
         // Draw active segment
         if (i < activeSegments) {
-            ctx.fillStyle = PALETTE.PROGRESS_ACTIVE;
-            ctx.shadowColor = PALETTE.PROGRESS_ACTIVE;
+            ctx.fillStyle = options.progressColor;
+            ctx.shadowColor = options.progressColor;
             ctx.shadowBlur = 10;
             ctx.fillRect(segX, progressY, segmentWidth, 24);
             ctx.shadowBlur = 0;
@@ -198,7 +224,7 @@ export const Pixel = async (option: PixelOption): Promise<Buffer> => {
     }
     
     // 9. Draw Timestamps
-    ctx.fillStyle = PALETTE.TIME;
+    ctx.fillStyle = options.timeColor;
     ctx.font = '24px "PixelFont"';
     ctx.textBaseline = 'bottom';
     const timeY = cardY + cardHeight - padding;

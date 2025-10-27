@@ -103,6 +103,12 @@ export interface GuildStatusOptions {
     theme?: 'dark' | 'light';
     showTopUsers?: boolean;
     customBackground?: string;
+    backgroundColor?: string;
+    primaryColor?: string;
+    secondaryColor?: string;
+    accentColor?: string;
+    textPrimaryColor?: string;
+    textSecondaryColor?: string;
 }
 
 // Helper function for rounded rectangles
@@ -120,10 +126,13 @@ function roundRect(ctx: any, x: number, y: number, w: number, h: number, r: numb
 }
 
 // Draw gradient background
-const drawGradientBackground = (ctx: any, width: number, height: number, theme: 'dark' | 'light') => {
+const drawGradientBackground = (ctx: any, width: number, height: number, theme: 'dark' | 'light', bgColor?: string) => {
     const gradient = ctx.createLinearGradient(0, 0, 0, height);
     
-    if (theme === 'dark') {
+    if (bgColor) {
+        gradient.addColorStop(0, bgColor);
+        gradient.addColorStop(1, GUILD_PALETTE.BACKGROUND_DARK);
+    } else if (theme === 'dark') {
         gradient.addColorStop(0, GUILD_PALETTE.BACKGROUND_LIGHT);
         gradient.addColorStop(1, GUILD_PALETTE.BACKGROUND_DARK);
     } else {
@@ -320,7 +329,13 @@ export const GuildStatus = async (options: GuildStatusOptions): Promise<Buffer> 
         stats,
         theme = 'dark',
         showTopUsers = true,
-        customBackground
+        customBackground,
+        backgroundColor,
+        primaryColor = GUILD_PALETTE.PRIMARY,
+        secondaryColor = GUILD_PALETTE.SECONDARY,
+        accentColor = GUILD_PALETTE.ACCENT,
+        textPrimaryColor = GUILD_PALETTE.TEXT_PRIMARY,
+        textSecondaryColor = GUILD_PALETTE.TEXT_SECONDARY
     } = options;
 
     const width = 600;
@@ -347,10 +362,10 @@ export const GuildStatus = async (options: GuildStatusOptions): Promise<Buffer> 
             const bgImage = await loadImage(customBackground);
             ctx.drawImage(bgImage, 0, 0, width, height);
         } catch (e) {
-            drawGradientBackground(ctx, width, height, theme);
+            drawGradientBackground(ctx, width, height, theme, backgroundColor);
         }
     } else {
-        drawGradientBackground(ctx, width, height, theme);
+        drawGradientBackground(ctx, width, height, theme, backgroundColor);
     }
 
     // 2. Draw header with server info
@@ -363,13 +378,13 @@ export const GuildStatus = async (options: GuildStatusOptions): Promise<Buffer> 
     await drawServerIcon(ctx, iconX, iconY, iconSize, guildIcon);
     
     // Server name
-    ctx.fillStyle = GUILD_PALETTE.TEXT_PRIMARY;
+    ctx.fillStyle = textPrimaryColor;
     ctx.font = 'bold 20px Arial';
     ctx.textAlign = 'left';
     ctx.fillText(guildName, iconX + iconSize + 15, iconY + 20);
     
     // Server stats summary
-    ctx.fillStyle = GUILD_PALETTE.TEXT_SECONDARY;
+    ctx.fillStyle = textSecondaryColor;
     ctx.font = '12px Arial';
     ctx.fillText(`${formatNumber(stats.totalMembers)} members • ${formatNumber(stats.onlineMembers)} online`, 
                  iconX + iconSize + 15, iconY + 40);
@@ -383,7 +398,7 @@ export const GuildStatus = async (options: GuildStatusOptions): Promise<Buffer> 
     
     // Members card
     drawStatCard(ctx, cardsStartX, cardsStartY, cardWidth, cardHeight, 
-                'Total Members', formatNumber(stats.totalMembers), '👥', GUILD_PALETTE.PRIMARY);
+                'Total Members', formatNumber(stats.totalMembers), '👥', primaryColor);
     
     // Online members card
     drawStatCard(ctx, cardsStartX + cardWidth + cardSpacing, cardsStartY, cardWidth, cardHeight,
@@ -391,11 +406,11 @@ export const GuildStatus = async (options: GuildStatusOptions): Promise<Buffer> 
     
     // Messages card
     drawStatCard(ctx, cardsStartX + (cardWidth + cardSpacing) * 2, cardsStartY, cardWidth, cardHeight,
-                'Messages', formatNumber(stats.totalMessages), '💬', GUILD_PALETTE.SECONDARY);
+                'Messages', formatNumber(stats.totalMessages), '💬', secondaryColor);
     
     // Voice time card
     drawStatCard(ctx, cardsStartX + (cardWidth + cardSpacing) * 3, cardsStartY, cardWidth, cardHeight,
-                'Voice Time', formatDuration(stats.totalVoiceTime), '🎤', GUILD_PALETTE.ACCENT);
+                'Voice Time', formatDuration(stats.totalVoiceTime), '🎤', accentColor);
 
     // Second row
     // Active users card

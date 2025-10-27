@@ -78,6 +78,12 @@ export interface UserCardOptions {
     theme?: 'dark' | 'light';
     font?: 'sans-serif' | 'serif' | 'monospace';
     backgroundColor?: string;
+    backgroundImage?: string;
+    primaryColor?: string;
+    secondaryColor?: string;
+    accentColor?: string;
+    textPrimaryColor?: string;
+    textSecondaryColor?: string;
     container: {
         header: {
             userInfo: UserInfo;
@@ -113,7 +119,11 @@ function roundRect(ctx: any, x: number, y: number, w: number, h: number, r: numb
 }
 
 // Draw gradient background
-const drawGradientBackground = (ctx: any, width: number, height: number, backgroundColor: string) => {
+const drawGradientBackground = (ctx: any, width: number, height: number, backgroundColor: string, backgroundImage?: string) => {
+    if (backgroundImage) {
+        // Background image will be drawn in main function
+        return;
+    }
     const gradient = ctx.createLinearGradient(0, 0, 0, height);
     gradient.addColorStop(0, backgroundColor);
     gradient.addColorStop(1, USER_CARD_PALETTE.BACKGROUND_DARK);
@@ -279,6 +289,12 @@ export const UserCard = async (options: UserCardOptions): Promise<Buffer> => {
         theme = 'dark',
         font = 'sans-serif',
         backgroundColor = USER_CARD_PALETTE.BACKGROUND_DARK,
+        backgroundImage,
+        primaryColor = USER_CARD_PALETTE.PRIMARY,
+        secondaryColor = USER_CARD_PALETTE.SECONDARY,
+        accentColor = USER_CARD_PALETTE.ACCENT,
+        textPrimaryColor = USER_CARD_PALETTE.TEXT_PRIMARY,
+        textSecondaryColor = USER_CARD_PALETTE.TEXT_SECONDARY,
         container
     } = options;
 
@@ -301,7 +317,16 @@ export const UserCard = async (options: UserCardOptions): Promise<Buffer> => {
     }
 
     // 1. Draw background
-    drawGradientBackground(ctx, width, height, backgroundColor);
+    if (backgroundImage) {
+        try {
+            const bgImage = await loadImage(backgroundImage);
+            ctx.drawImage(bgImage, 0, 0, width, height);
+        } catch (e) {
+            drawGradientBackground(ctx, width, height, backgroundColor);
+        }
+    } else {
+        drawGradientBackground(ctx, width, height, backgroundColor);
+    }
 
     // 2. Draw main container
     const containerPadding = 20;
@@ -334,7 +359,7 @@ export const UserCard = async (options: UserCardOptions): Promise<Buffer> => {
     const infoY = headerY + 15;
 
     // Display name
-    ctx.fillStyle = USER_CARD_PALETTE.TEXT_PRIMARY;
+    ctx.fillStyle = textPrimaryColor;
     ctx.font = 'bold 20px Arial';
     ctx.textAlign = 'left';
     ctx.fillText(container.header.userInfo.displayName, infoX, infoY);
@@ -346,7 +371,7 @@ export const UserCard = async (options: UserCardOptions): Promise<Buffer> => {
 
     // Custom status
     if (container.header.userInfo.customStatus) {
-        ctx.fillStyle = USER_CARD_PALETTE.TEXT_SECONDARY;
+        ctx.fillStyle = textSecondaryColor;
         ctx.font = '12px Arial';
         ctx.fillText(`${container.header.userInfo.customStatus.emoji} ${container.header.userInfo.customStatus.text}`, infoX, infoY + 45);
     }
@@ -360,7 +385,7 @@ export const UserCard = async (options: UserCardOptions): Promise<Buffer> => {
         ctx.font = '10px Arial';
         ctx.fillText(detail.label, infoX, detailY);
         
-        ctx.fillStyle = USER_CARD_PALETTE.TEXT_SECONDARY;
+        ctx.fillStyle = textSecondaryColor;
         ctx.font = '11px Arial';
         ctx.fillText(detail.value, infoX + 100, detailY);
     });

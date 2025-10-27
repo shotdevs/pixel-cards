@@ -36,6 +36,12 @@ export interface WelcomeCardOptions {
     joinTime?: string;
     guildPosition?: number;
     discriminator?: string;
+    backgroundColor?: string;
+    backgroundImage?: string;
+    primaryColor?: string;
+    secondaryColor?: string;
+    textColor?: string;
+    borderColor?: string;
 }
 
 // Helper function for rounded rectangles
@@ -53,10 +59,11 @@ function roundRect(ctx: any, x: number, y: number, w: number, h: number, r: numb
 }
 
 // Draw cyberpunk background with tech elements
-const drawCyberpunkBackground = (ctx: any, width: number, height: number) => {
+const drawCyberpunkBackground = (ctx: any, width: number, height: number, bgColor?: string) => {
     // Base gradient
     const gradient = ctx.createRadialGradient(width / 2, height / 2, 0, width / 2, height / 2, width * 0.8);
-    gradient.addColorStop(0, WELCOME_PALETTE.BACKGROUND_MID);
+    const color1 = bgColor || WELCOME_PALETTE.BACKGROUND_MID;
+    gradient.addColorStop(0, color1);
     gradient.addColorStop(1, WELCOME_PALETTE.BACKGROUND_DARK);
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, width, height);
@@ -94,8 +101,8 @@ const drawCyberpunkBackground = (ctx: any, width: number, height: number) => {
 };
 
 // Draw tech HUD elements
-const drawHUDElements = (ctx: any, width: number, height: number) => {
-    ctx.strokeStyle = WELCOME_PALETTE.TECH_LINE_DARK;
+const drawHUDElements = (ctx: any, width: number, height: number, primaryColor?: string) => {
+    ctx.strokeStyle = primaryColor || WELCOME_PALETTE.TECH_LINE_DARK;
     ctx.lineWidth = 2;
     
     // Top-left corner
@@ -149,7 +156,7 @@ const drawHUDElements = (ctx: any, width: number, height: number) => {
     }
     
     // Small accent dots
-    ctx.fillStyle = WELCOME_PALETTE.TECH_LINE_DARK;
+    ctx.fillStyle = primaryColor || WELCOME_PALETTE.TECH_LINE_DARK;
     const dots = [
         { x: 40, y: 40 },
         { x: width - 40, y: 40 },
@@ -258,7 +265,13 @@ export const WelcomeCard = async (options: WelcomeCardOptions): Promise<Buffer> 
         joinDate = new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' }),
         joinTime = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }),
         guildPosition = memberCount,
-        discriminator
+        discriminator,
+        backgroundColor,
+        backgroundImage,
+        primaryColor = WELCOME_PALETTE.TECH_LINE_DARK,
+        secondaryColor = WELCOME_PALETTE.TEXT_SECONDARY,
+        textColor = WELCOME_PALETTE.TEXT_PRIMARY,
+        borderColor = WELCOME_PALETTE.TECH_LINE_DARK
     } = options;
 
     const width = 876;
@@ -280,10 +293,19 @@ export const WelcomeCard = async (options: WelcomeCardOptions): Promise<Buffer> 
     }
 
     // 1. Draw background
-    drawCyberpunkBackground(ctx, width, height);
+    if (backgroundImage) {
+        try {
+            const bgImage = await loadImage(backgroundImage);
+            ctx.drawImage(bgImage, 0, 0, width, height);
+        } catch (e) {
+            drawCyberpunkBackground(ctx, width, height, backgroundColor);
+        }
+    } else {
+        drawCyberpunkBackground(ctx, width, height, backgroundColor);
+    }
     
     // 2. Draw HUD elements
-    drawHUDElements(ctx, width, height);
+    drawHUDElements(ctx, width, height, primaryColor);
     
     // 3. Draw main card container
     const cardWidth = 720;
@@ -297,9 +319,9 @@ export const WelcomeCard = async (options: WelcomeCardOptions): Promise<Buffer> 
     
     // Card border with glow
     ctx.save();
-    ctx.strokeStyle = WELCOME_PALETTE.TECH_LINE_DARK;
+    ctx.strokeStyle = borderColor;
     ctx.lineWidth = 2;
-    ctx.shadowColor = WELCOME_PALETTE.TECH_LINE_DARK;
+    ctx.shadowColor = borderColor;
     ctx.shadowBlur = 15;
     roundRect(ctx, cardX, cardY, cardWidth, cardHeight, 20).stroke();
     ctx.restore();
@@ -314,7 +336,7 @@ export const WelcomeCard = async (options: WelcomeCardOptions): Promise<Buffer> 
     const textY = avatarY + avatarSize + 40;
     
     // "WELCOME" text
-    ctx.fillStyle = WELCOME_PALETTE.TEXT_SECONDARY;
+    ctx.fillStyle = secondaryColor;
     ctx.font = 'bold 32px Arial';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
@@ -323,9 +345,9 @@ export const WelcomeCard = async (options: WelcomeCardOptions): Promise<Buffer> 
     // Username text with glow
     ctx.save();
     const displayName = discriminator ? `[${username}#${discriminator}]` : `[${username}]`;
-    ctx.fillStyle = WELCOME_PALETTE.TEXT_PRIMARY;
+    ctx.fillStyle = textColor;
     ctx.font = 'bold 42px Arial';
-    ctx.shadowColor = WELCOME_PALETTE.TEXT_SECONDARY;
+    ctx.shadowColor = secondaryColor;
     ctx.shadowBlur = 20;
     ctx.fillText(displayName, width / 2, textY + 45);
     ctx.restore();
@@ -343,7 +365,7 @@ export const WelcomeCard = async (options: WelcomeCardOptions): Promise<Buffer> 
     drawInfoPanel(ctx, rightPanelX, infoPanelY, '🛡️', `GUILD POSITION:`, `#${guildPosition}`);
     
     // 7. Draw member count at bottom
-    ctx.fillStyle = WELCOME_PALETTE.TEXT_PRIMARY;
+    ctx.fillStyle = textColor;
     ctx.font = 'bold 18px Arial';
     ctx.textAlign = 'center';
     ctx.fillText(`TOTAL MEMBERS: ${memberCount.toLocaleString()}`, width / 2, cardY + cardHeight - 30);

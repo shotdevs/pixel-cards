@@ -77,6 +77,12 @@ interface GuildStatusOptions {
     theme?: 'dark' | 'light';
     showTopUsers?: boolean;
     customBackground?: string;
+    backgroundColor?: string;
+    primaryColor?: string;
+    secondaryColor?: string;
+    accentColor?: string;
+    textPrimaryColor?: string;
+    textSecondaryColor?: string;
 }
 declare const GuildStatus: (options: GuildStatusOptions) => Promise<Buffer>;
 declare const createGuildStats: (users: Record<string, UserData>, totalMembers: number, onlineMembers: number) => GuildStats;
@@ -192,6 +198,12 @@ interface UserCardOptions {
     theme?: 'dark' | 'light';
     font?: 'sans-serif' | 'serif' | 'monospace';
     backgroundColor?: string;
+    backgroundImage?: string;
+    primaryColor?: string;
+    secondaryColor?: string;
+    accentColor?: string;
+    textPrimaryColor?: string;
+    textSecondaryColor?: string;
     container: {
         header: {
             userInfo: UserInfo;
@@ -222,6 +234,12 @@ interface WelcomeCardOptions {
     joinTime?: string;
     guildPosition?: number;
     discriminator?: string;
+    backgroundColor?: string;
+    backgroundImage?: string;
+    primaryColor?: string;
+    secondaryColor?: string;
+    textColor?: string;
+    borderColor?: string;
 }
 declare const WelcomeCard: (options: WelcomeCardOptions) => Promise<Buffer>;
 
@@ -232,6 +250,13 @@ type PixelOption = {
     progress?: number;
     startTime?: string;
     endTime?: string;
+    backgroundColor?: string;
+    backgroundImage?: string;
+    progressColor?: string;
+    progressBarColor?: string;
+    titleColor?: string;
+    artistColor?: string;
+    timeColor?: string;
 };
 declare const Pixel: (option: PixelOption) => Promise<Buffer>;
 

@@ -209,9 +209,12 @@ function roundRect2(ctx, x, y, w, h, r) {
   ctx.closePath();
   return ctx;
 }
-var drawGradientBackground = (ctx, width, height, theme) => {
+var drawGradientBackground = (ctx, width, height, theme, bgColor) => {
   const gradient = ctx.createLinearGradient(0, 0, 0, height);
-  if (theme === "dark") {
+  if (bgColor) {
+    gradient.addColorStop(0, bgColor);
+    gradient.addColorStop(1, GUILD_PALETTE.BACKGROUND_DARK);
+  } else if (theme === "dark") {
     gradient.addColorStop(0, GUILD_PALETTE.BACKGROUND_LIGHT);
     gradient.addColorStop(1, GUILD_PALETTE.BACKGROUND_DARK);
   } else {
@@ -353,7 +356,13 @@ var GuildStatus = async (options) => {
     stats,
     theme = "dark",
     showTopUsers = true,
-    customBackground
+    customBackground,
+    backgroundColor,
+    primaryColor = GUILD_PALETTE.PRIMARY,
+    secondaryColor = GUILD_PALETTE.SECONDARY,
+    accentColor = GUILD_PALETTE.ACCENT,
+    textPrimaryColor = GUILD_PALETTE.TEXT_PRIMARY,
+    textSecondaryColor = GUILD_PALETTE.TEXT_SECONDARY
   } = options;
   const width = 600;
   const height = 450;
@@ -373,21 +382,21 @@ var GuildStatus = async (options) => {
       const bgImage = await (0, import_canvas2.loadImage)(customBackground);
       ctx.drawImage(bgImage, 0, 0, width, height);
     } catch (e) {
-      drawGradientBackground(ctx, width, height, theme);
+      drawGradientBackground(ctx, width, height, theme, backgroundColor);
     }
   } else {
-    drawGradientBackground(ctx, width, height, theme);
+    drawGradientBackground(ctx, width, height, theme, backgroundColor);
   }
   const headerHeight = 80;
   const iconSize = 45;
   const iconX = 20;
   const iconY = 15;
   await drawServerIcon(ctx, iconX, iconY, iconSize, guildIcon);
-  ctx.fillStyle = GUILD_PALETTE.TEXT_PRIMARY;
+  ctx.fillStyle = textPrimaryColor;
   ctx.font = "bold 20px Arial";
   ctx.textAlign = "left";
   ctx.fillText(guildName, iconX + iconSize + 15, iconY + 20);
-  ctx.fillStyle = GUILD_PALETTE.TEXT_SECONDARY;
+  ctx.fillStyle = textSecondaryColor;
   ctx.font = "12px Arial";
   ctx.fillText(
     `${formatNumber(stats.totalMembers)} members \u2022 ${formatNumber(stats.onlineMembers)} online`,
@@ -408,7 +417,7 @@ var GuildStatus = async (options) => {
     "Total Members",
     formatNumber(stats.totalMembers),
     "\u{1F465}",
-    GUILD_PALETTE.PRIMARY
+    primaryColor
   );
   drawStatCard(
     ctx,
@@ -430,7 +439,7 @@ var GuildStatus = async (options) => {
     "Messages",
     formatNumber(stats.totalMessages),
     "\u{1F4AC}",
-    GUILD_PALETTE.SECONDARY
+    secondaryColor
   );
   drawStatCard(
     ctx,
@@ -441,7 +450,7 @@ var GuildStatus = async (options) => {
     "Voice Time",
     formatDuration(stats.totalVoiceTime),
     "\u{1F3A4}",
-    GUILD_PALETTE.ACCENT
+    accentColor
   );
   drawStatCard(
     ctx,
@@ -800,7 +809,10 @@ function roundRect3(ctx, x, y, w, h, r) {
   ctx.closePath();
   return ctx;
 }
-var drawGradientBackground2 = (ctx, width, height, backgroundColor) => {
+var drawGradientBackground2 = (ctx, width, height, backgroundColor, backgroundImage) => {
+  if (backgroundImage) {
+    return;
+  }
   const gradient = ctx.createLinearGradient(0, 0, 0, height);
   gradient.addColorStop(0, backgroundColor);
   gradient.addColorStop(1, USER_CARD_PALETTE.BACKGROUND_DARK);
@@ -918,6 +930,12 @@ var UserCard = async (options) => {
     theme = "dark",
     font = "sans-serif",
     backgroundColor = USER_CARD_PALETTE.BACKGROUND_DARK,
+    backgroundImage,
+    primaryColor = USER_CARD_PALETTE.PRIMARY,
+    secondaryColor = USER_CARD_PALETTE.SECONDARY,
+    accentColor = USER_CARD_PALETTE.ACCENT,
+    textPrimaryColor = USER_CARD_PALETTE.TEXT_PRIMARY,
+    textSecondaryColor = USER_CARD_PALETTE.TEXT_SECONDARY,
     container
   } = options;
   const width = 800;
@@ -933,7 +951,16 @@ var UserCard = async (options) => {
   } catch (e) {
     console.warn("Pixel font not found, using default fonts");
   }
-  drawGradientBackground2(ctx, width, height, backgroundColor);
+  if (backgroundImage) {
+    try {
+      const bgImage = await (0, import_canvas3.loadImage)(backgroundImage);
+      ctx.drawImage(bgImage, 0, 0, width, height);
+    } catch (e) {
+      drawGradientBackground2(ctx, width, height, backgroundColor);
+    }
+  } else {
+    drawGradientBackground2(ctx, width, height, backgroundColor);
+  }
   const containerPadding = 20;
   const containerWidth = width - containerPadding * 2;
   const containerHeight = height - containerPadding * 2;
@@ -952,7 +979,7 @@ var UserCard = async (options) => {
   await drawUserAvatar(ctx, avatarX, avatarY, avatarSize, container.header.userInfo.avatar);
   const infoX = avatarX + avatarSize + 15;
   const infoY = headerY + 15;
-  ctx.fillStyle = USER_CARD_PALETTE.TEXT_PRIMARY;
+  ctx.fillStyle = textPrimaryColor;
   ctx.font = "bold 20px Arial";
   ctx.textAlign = "left";
   ctx.fillText(container.header.userInfo.displayName, infoX, infoY);
@@ -960,7 +987,7 @@ var UserCard = async (options) => {
   ctx.font = "14px Arial";
   ctx.fillText(`@${container.header.userInfo.username}`, infoX, infoY + 25);
   if (container.header.userInfo.customStatus) {
-    ctx.fillStyle = USER_CARD_PALETTE.TEXT_SECONDARY;
+    ctx.fillStyle = textSecondaryColor;
     ctx.font = "12px Arial";
     ctx.fillText(`${container.header.userInfo.customStatus.emoji} ${container.header.userInfo.customStatus.text}`, infoX, infoY + 45);
   }
@@ -970,7 +997,7 @@ var UserCard = async (options) => {
     ctx.fillStyle = USER_CARD_PALETTE.TEXT_MUTED;
     ctx.font = "10px Arial";
     ctx.fillText(detail.label, infoX, detailY);
-    ctx.fillStyle = USER_CARD_PALETTE.TEXT_SECONDARY;
+    ctx.fillStyle = textSecondaryColor;
     ctx.font = "11px Arial";
     ctx.fillText(detail.value, infoX + 100, detailY);
   });
@@ -1033,9 +1060,10 @@ function roundRect4(ctx, x, y, w, h, r) {
   ctx.closePath();
   return ctx;
 }
-var drawCyberpunkBackground = (ctx, width, height) => {
+var drawCyberpunkBackground = (ctx, width, height, bgColor) => {
   const gradient = ctx.createRadialGradient(width / 2, height / 2, 0, width / 2, height / 2, width * 0.8);
-  gradient.addColorStop(0, WELCOME_PALETTE.BACKGROUND_MID);
+  const color1 = bgColor || WELCOME_PALETTE.BACKGROUND_MID;
+  gradient.addColorStop(0, color1);
   gradient.addColorStop(1, WELCOME_PALETTE.BACKGROUND_DARK);
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, width, height);
@@ -1063,8 +1091,8 @@ var drawCyberpunkBackground = (ctx, width, height) => {
     ctx.fill();
   }
 };
-var drawHUDElements = (ctx, width, height) => {
-  ctx.strokeStyle = WELCOME_PALETTE.TECH_LINE_DARK;
+var drawHUDElements = (ctx, width, height, primaryColor) => {
+  ctx.strokeStyle = primaryColor || WELCOME_PALETTE.TECH_LINE_DARK;
   ctx.lineWidth = 2;
   ctx.beginPath();
   ctx.moveTo(40, 80);
@@ -1102,7 +1130,7 @@ var drawHUDElements = (ctx, width, height) => {
     ctx.lineTo(width - 100 - i * 10, y);
     ctx.stroke();
   }
-  ctx.fillStyle = WELCOME_PALETTE.TECH_LINE_DARK;
+  ctx.fillStyle = primaryColor || WELCOME_PALETTE.TECH_LINE_DARK;
   const dots = [
     { x: 40, y: 40 },
     { x: width - 40, y: 40 },
@@ -1189,7 +1217,13 @@ var WelcomeCard = async (options) => {
     joinDate = (/* @__PURE__ */ new Date()).toLocaleDateString("en-US", { month: "2-digit", day: "2-digit", year: "numeric" }),
     joinTime = (/* @__PURE__ */ new Date()).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true }),
     guildPosition = memberCount,
-    discriminator
+    discriminator,
+    backgroundColor,
+    backgroundImage,
+    primaryColor = WELCOME_PALETTE.TECH_LINE_DARK,
+    secondaryColor = WELCOME_PALETTE.TEXT_SECONDARY,
+    textColor = WELCOME_PALETTE.TEXT_PRIMARY,
+    borderColor = WELCOME_PALETTE.TECH_LINE_DARK
   } = options;
   const width = 876;
   const height = 493;
@@ -1204,8 +1238,17 @@ var WelcomeCard = async (options) => {
   } catch (e) {
     console.warn("Pixel font not found, using default fonts");
   }
-  drawCyberpunkBackground(ctx, width, height);
-  drawHUDElements(ctx, width, height);
+  if (backgroundImage) {
+    try {
+      const bgImage = await (0, import_canvas4.loadImage)(backgroundImage);
+      ctx.drawImage(bgImage, 0, 0, width, height);
+    } catch (e) {
+      drawCyberpunkBackground(ctx, width, height, backgroundColor);
+    }
+  } else {
+    drawCyberpunkBackground(ctx, width, height, backgroundColor);
+  }
+  drawHUDElements(ctx, width, height, primaryColor);
   const cardWidth = 720;
   const cardHeight = 380;
   const cardX = (width - cardWidth) / 2;
@@ -1213,9 +1256,9 @@ var WelcomeCard = async (options) => {
   ctx.fillStyle = "rgba(26, 26, 46, 0.7)";
   roundRect4(ctx, cardX, cardY, cardWidth, cardHeight, 20).fill();
   ctx.save();
-  ctx.strokeStyle = WELCOME_PALETTE.TECH_LINE_DARK;
+  ctx.strokeStyle = borderColor;
   ctx.lineWidth = 2;
-  ctx.shadowColor = WELCOME_PALETTE.TECH_LINE_DARK;
+  ctx.shadowColor = borderColor;
   ctx.shadowBlur = 15;
   roundRect4(ctx, cardX, cardY, cardWidth, cardHeight, 20).stroke();
   ctx.restore();
@@ -1224,16 +1267,16 @@ var WelcomeCard = async (options) => {
   const avatarY = cardY + 40;
   await drawGlowingAvatar(ctx, avatarX, avatarY, avatarSize, avatar);
   const textY = avatarY + avatarSize + 40;
-  ctx.fillStyle = WELCOME_PALETTE.TEXT_SECONDARY;
+  ctx.fillStyle = secondaryColor;
   ctx.font = "bold 32px Arial";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.fillText("WELCOME", width / 2, textY);
   ctx.save();
   const displayName = discriminator ? `[${username}#${discriminator}]` : `[${username}]`;
-  ctx.fillStyle = WELCOME_PALETTE.TEXT_PRIMARY;
+  ctx.fillStyle = textColor;
   ctx.font = "bold 42px Arial";
-  ctx.shadowColor = WELCOME_PALETTE.TEXT_SECONDARY;
+  ctx.shadowColor = secondaryColor;
   ctx.shadowBlur = 20;
   ctx.fillText(displayName, width / 2, textY + 45);
   ctx.restore();
@@ -1243,7 +1286,7 @@ var WelcomeCard = async (options) => {
   const rightPanelX = cardX + panelSpacing + 50;
   drawInfoPanel(ctx, leftPanelX, infoPanelY, "\u{1F4C5}", `JOINED: ${joinDate}`, joinTime);
   drawInfoPanel(ctx, rightPanelX, infoPanelY, "\u{1F6E1}\uFE0F", `GUILD POSITION:`, `#${guildPosition}`);
-  ctx.fillStyle = WELCOME_PALETTE.TEXT_PRIMARY;
+  ctx.fillStyle = textColor;
   ctx.font = "bold 18px Arial";
   ctx.textAlign = "center";
   ctx.fillText(`TOTAL MEMBERS: ${memberCount.toLocaleString()}`, width / 2, cardY + cardHeight - 30);
@@ -1310,7 +1353,14 @@ var Pixel = async (option) => {
     thumbnailImage: option.thumbnailImage,
     progress: option.progress ?? 10,
     startTime: option.startTime ?? "0:00",
-    endTime: option.endTime ?? "0:00"
+    endTime: option.endTime ?? "0:00",
+    backgroundColor: option.backgroundColor,
+    backgroundImage: option.backgroundImage,
+    progressColor: option.progressColor ?? PALETTE2.PROGRESS_ACTIVE,
+    progressBarColor: option.progressBarColor ?? PALETTE2.PROGRESS_BG,
+    titleColor: option.titleColor ?? PALETTE2.TITLE,
+    artistColor: option.artistColor ?? PALETTE2.ARTIST,
+    timeColor: option.timeColor ?? PALETTE2.TIME
   };
   options.progress = Math.max(0, Math.min(100, options.progress));
   const width = 1200;
@@ -1326,7 +1376,19 @@ var Pixel = async (option) => {
   } catch (e) {
     console.error("Font not found. Make sure 'pixel.ttf' is in the 'fonts' folder.");
   }
-  drawCosmicBackground(ctx, width, height);
+  if (options.backgroundImage) {
+    try {
+      const bgImage = await (0, import_canvas5.loadImage)(options.backgroundImage);
+      ctx.drawImage(bgImage, 0, 0, width, height);
+    } catch (e) {
+      drawCosmicBackground(ctx, width, height);
+    }
+  } else if (options.backgroundColor) {
+    ctx.fillStyle = options.backgroundColor;
+    ctx.fillRect(0, 0, width, height);
+  } else {
+    drawCosmicBackground(ctx, width, height);
+  }
   const cardWidth = 1020;
   const cardHeight = 456;
   const cardX = (width - cardWidth) / 2;
@@ -1371,10 +1433,10 @@ var Pixel = async (option) => {
   ctx.font = '52px "PixelFont"';
   ctx.fillStyle = "rgba(0,0,0,0.3)";
   ctx.fillText(options.name, textX + 2, thumbY + 25 + 2, textWidth);
-  ctx.fillStyle = PALETTE2.TITLE;
+  ctx.fillStyle = options.titleColor;
   ctx.fillText(options.name, textX, thumbY + 25, textWidth);
   ctx.font = '32px "PixelFont"';
-  ctx.fillStyle = PALETTE2.ARTIST;
+  ctx.fillStyle = options.artistColor;
   ctx.fillText(options.author, textX, thumbY + 95, textWidth);
   const progressY = thumbY + 160;
   const segmentWidth = 12;
@@ -1383,17 +1445,17 @@ var Pixel = async (option) => {
   const activeSegments = Math.round(options.progress / 100 * numSegments);
   for (let i = 0; i < numSegments; i++) {
     const segX = textX + i * (segmentWidth + segmentGap);
-    ctx.fillStyle = PALETTE2.PROGRESS_BG;
+    ctx.fillStyle = options.progressBarColor;
     ctx.fillRect(segX, progressY, segmentWidth, 24);
     if (i < activeSegments) {
-      ctx.fillStyle = PALETTE2.PROGRESS_ACTIVE;
-      ctx.shadowColor = PALETTE2.PROGRESS_ACTIVE;
+      ctx.fillStyle = options.progressColor;
+      ctx.shadowColor = options.progressColor;
       ctx.shadowBlur = 10;
       ctx.fillRect(segX, progressY, segmentWidth, 24);
       ctx.shadowBlur = 0;
     }
   }
-  ctx.fillStyle = PALETTE2.TIME;
+  ctx.fillStyle = options.timeColor;
   ctx.font = '24px "PixelFont"';
   ctx.textBaseline = "bottom";
   const timeY = cardY + cardHeight - padding;

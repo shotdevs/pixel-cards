@@ -1,7 +1,7 @@
 {
     "name": "pixel-cards",
-    "version": "3.0.9",
-    "description": "A custom music card and Discord server status generator for the Pixel music bot.",
+    "version": "3.1.0",
+    "description": "Beautiful, customizable Discord card generators - Music cards, Welcome cards, User profiles, and Guild status cards with full color and background customization",
     "main": "./dist/index.js",
     "module": "./dist/index.mjs",
     "types": "./dist/index.d.ts",
@@ -14,22 +14,28 @@
     },
     "files": [
         "dist",
-        "fonts"
+        "fonts",
+        "examples"
     ],
     "scripts": {
         "build": "tsup src/index.ts --format cjs,esm --dts --clean"
     },
     "keywords": [
-        "musicard",
         "discord",
+        "discord-cards",
+        "discord-bot",
         "canvas",
+        "musicard",
+        "music-card",
+        "welcome-card",
+        "user-card",
         "guild-status",
         "server-status",
-        "activity-card",
-        "ghost-x-bot",
-        "welcome-card",
         "discord-welcome",
-        "member-welcome"
+        "discord-canvas",
+        "customizable",
+        "card-generator",
+        "pixel-cards"
     ],
     "author": "shotxd01",
     "license": "GPL-3.0-only",

@@ -132,15 +132,27 @@ const drawGradientBackground = (ctx: any, width: number, height: number, backgro
     ctx.fillRect(0, 0, width, height);
 };
 
-// Draw user avatar with fallback
+// Draw user avatar with fallback and border glow
 const drawUserAvatar = async (ctx: any, x: number, y: number, size: number, avatarUrl: string) => {
     const avatarRadius = size / 2;
+    const centerX = x + avatarRadius;
+    const centerY = y + avatarRadius;
+    
+    // Draw outer glow
+    ctx.save();
+    ctx.shadowColor = USER_CARD_PALETTE.PRIMARY;
+    ctx.shadowBlur = 20;
+    ctx.fillStyle = USER_CARD_PALETTE.PRIMARY;
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, avatarRadius + 3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
     
     try {
         const avatar = await loadImage(avatarUrl);
         ctx.save();
         ctx.beginPath();
-        ctx.arc(x + avatarRadius, y + avatarRadius, avatarRadius, 0, Math.PI * 2);
+        ctx.arc(centerX, centerY, avatarRadius, 0, Math.PI * 2);
         ctx.clip();
         ctx.drawImage(avatar, x, y, size, size);
         ctx.restore();
@@ -148,6 +160,13 @@ const drawUserAvatar = async (ctx: any, x: number, y: number, size: number, avat
         // Fallback to default avatar
         drawDefaultAvatar(ctx, x, y, size);
     }
+    
+    // Draw border
+    ctx.strokeStyle = USER_CARD_PALETTE.PRIMARY;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, avatarRadius, 0, Math.PI * 2);
+    ctx.stroke();
 };
 
 // Draw default avatar
@@ -170,28 +189,50 @@ const drawDefaultAvatar = (ctx: any, x: number, y: number, size: number) => {
     ctx.fillText('👤', centerX, centerY);
 };
 
-// Draw panel
+// Draw panel with gradient and shadow
 const drawPanel = (ctx: any, x: number, y: number, width: number, height: number, panel: Panel) => {
-    // Panel background
-    ctx.fillStyle = USER_CARD_PALETTE.PANEL_BG;
-    roundRect(ctx, x, y, width, height, 12).fill();
+    // Panel shadow
+    ctx.save();
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+    ctx.shadowBlur = 10;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 4;
     
-    // Panel border
-    ctx.strokeStyle = USER_CARD_PALETTE.PANEL_BORDER;
-    ctx.lineWidth = 1;
-    roundRect(ctx, x, y, width, height, 12).stroke();
+    // Panel background gradient
+    const gradient = ctx.createLinearGradient(x, y, x, y + height);
+    gradient.addColorStop(0, '#3a3d42');
+    gradient.addColorStop(1, USER_CARD_PALETTE.PANEL_BG);
+    ctx.fillStyle = gradient;
+    roundRect(ctx, x, y, width, height, 15).fill();
+    ctx.restore();
+    
+    // Panel border with subtle glow
+    ctx.save();
+    ctx.strokeStyle = USER_CARD_PALETTE.PRIMARY;
+    ctx.lineWidth = 2;
+    ctx.shadowColor = USER_CARD_PALETTE.PRIMARY;
+    ctx.shadowBlur = 5;
+    roundRect(ctx, x, y, width, height, 15).stroke();
+    ctx.restore();
     
     const padding = 15;
     const contentX = x + padding;
     const contentY = y + padding;
     const contentWidth = width - (padding * 2);
     
+    // Header bar
+    const headerGradient = ctx.createLinearGradient(x, y, x + width, y);
+    headerGradient.addColorStop(0, 'rgba(88, 101, 242, 0.2)');
+    headerGradient.addColorStop(1, 'rgba(88, 101, 242, 0.05)');
+    ctx.fillStyle = headerGradient;
+    roundRect(ctx, x, y, width, 35, 15).fill();
+    
     // Panel title with icon
     ctx.fillStyle = USER_CARD_PALETTE.TEXT_PRIMARY;
-    ctx.font = 'bold 14px Arial';
+    ctx.font = 'bold 16px Arial';
     ctx.textAlign = 'left';
-    ctx.fillText(panel.icon, contentX, contentY + 15);
-    ctx.fillText(panel.title, contentX + 25, contentY + 15);
+    ctx.fillText(panel.icon, contentX, contentY + 18);
+    ctx.fillText(panel.title, contentX + 30, contentY + 18);
     
     // Draw panel content based on type
     const contentStartY = contentY + 35;
@@ -298,8 +339,8 @@ export const UserCard = async (options: UserCardOptions): Promise<Buffer> => {
         container
     } = options;
 
-    const width = 800;
-    const height = 1000;
+    const width = 600;
+    const height = 400;
     const canvas = createCanvas(width, height);
     const ctx = canvas.getContext('2d');
     
@@ -344,69 +385,102 @@ export const UserCard = async (options: UserCardOptions): Promise<Buffer> => {
     ctx.lineWidth = 2;
     roundRect(ctx, containerX, containerY, containerWidth, containerHeight, 15).stroke();
 
-    // 3. Draw header section
-    const headerHeight = 120;
-    const headerY = containerY + 20;
+    // 3. Draw header section with gradient banner
+    const headerHeight = 140;
+    const headerY = containerY;
+    
+    // Header banner gradient
+    const bannerGradient = ctx.createLinearGradient(containerX, headerY, containerX + containerWidth, headerY);
+    bannerGradient.addColorStop(0, 'rgba(88, 101, 242, 0.3)');
+    bannerGradient.addColorStop(0.5, 'rgba(88, 101, 242, 0.15)');
+    bannerGradient.addColorStop(1, 'rgba(88, 101, 242, 0.3)');
+    ctx.fillStyle = bannerGradient;
+    roundRect(ctx, containerX + 10, headerY + 10, containerWidth - 20, 80, 12).fill();
     
     // User avatar
-    const avatarSize = 60;
-    const avatarX = containerX + 20;
-    const avatarY = headerY + 10;
+    const avatarSize = 70;
+    const avatarX = containerX + 25;
+    const avatarY = headerY + 20;
     await drawUserAvatar(ctx, avatarX, avatarY, avatarSize, container.header.userInfo.avatar);
 
     // User info
     const infoX = avatarX + avatarSize + 15;
-    const infoY = headerY + 15;
+    const infoY = headerY + 30;
 
-    // Display name
+    // Display name with shadow
+    ctx.save();
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+    ctx.shadowBlur = 3;
     ctx.fillStyle = textPrimaryColor;
     ctx.font = 'bold 20px Arial';
     ctx.textAlign = 'left';
     ctx.fillText(container.header.userInfo.displayName, infoX, infoY);
+    ctx.restore();
 
     // Username
-    ctx.fillStyle = USER_CARD_PALETTE.TEXT_MUTED;
+    ctx.fillStyle = USER_CARD_PALETTE.TEXT_SECONDARY;
     ctx.font = '14px Arial';
-    ctx.fillText(`@${container.header.userInfo.username}`, infoX, infoY + 25);
+    ctx.fillText(`@${container.header.userInfo.username}`, infoX, infoY + 22);
 
-    // Custom status
+    // Custom status with background
     if (container.header.userInfo.customStatus) {
-        ctx.fillStyle = textSecondaryColor;
+        const statusY = infoY + 42;
+        // Status background
+        ctx.fillStyle = 'rgba(88, 101, 242, 0.2)';
+        const statusText = `${container.header.userInfo.customStatus.emoji} ${container.header.userInfo.customStatus.text}`;
         ctx.font = '12px Arial';
-        ctx.fillText(`${container.header.userInfo.customStatus.emoji} ${container.header.userInfo.customStatus.text}`, infoX, infoY + 45);
+        const statusWidth = ctx.measureText(statusText).width + 16;
+        roundRect(ctx, infoX - 4, statusY - 12, statusWidth, 20, 4).fill();
+        
+        ctx.fillStyle = textPrimaryColor;
+        ctx.fillText(statusText, infoX, statusY);
     }
 
-    // Account details
-    const detailsY = infoY + 65;
+    // Account details in grid below header
+    const detailsY = headerY + 105;
+    const detailsPerRow = 2;
+    const detailSpacing = 20;
+    const detailCardWidth = (containerWidth - 60) / detailsPerRow;
+    
     container.header.accountDetails.forEach((detail, index) => {
-        const detailY = detailsY + (index * 18);
+        const col = index % detailsPerRow;
+        const row = Math.floor(index / detailsPerRow);
+        const detailX = containerX + 20 + (col * (detailCardWidth + detailSpacing));
+        const detailCardY = detailsY + (row * 60);
         
+        // Detail card background
+        const cardGradient = ctx.createLinearGradient(detailX, detailCardY, detailX, detailCardY + 50);
+        cardGradient.addColorStop(0, '#3a3d42');
+        cardGradient.addColorStop(1, USER_CARD_PALETTE.PANEL_BG);
+        
+        ctx.save();
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
+        ctx.shadowBlur = 5;
+        ctx.fillStyle = cardGradient;
+        roundRect(ctx, detailX, detailCardY, detailCardWidth, 50, 8).fill();
+        ctx.restore();
+        
+        // Card border
+        ctx.strokeStyle = USER_CARD_PALETTE.PANEL_BORDER;
+        ctx.lineWidth = 1;
+        roundRect(ctx, detailX, detailCardY, detailCardWidth, 50, 8).stroke();
+        
+        // Label
         ctx.fillStyle = USER_CARD_PALETTE.TEXT_MUTED;
-        ctx.font = '10px Arial';
-        ctx.fillText(detail.label, infoX, detailY);
-        
-        ctx.fillStyle = textSecondaryColor;
         ctx.font = '11px Arial';
-        ctx.fillText(detail.value, infoX + 100, detailY);
-    });
-
-    // 4. Draw body panels in grid layout
-    const bodyY = headerY + headerHeight + 20;
-    const panelWidth = (containerWidth - 60) / 2; // 2 columns
-    const panelHeight = 150;
-    const panelSpacing = 20;
-
-    container.body.panels.forEach((panel, index) => {
-        const col = index % 2;
-        const row = Math.floor(index / 2);
-        const panelX = containerX + 20 + (col * (panelWidth + panelSpacing));
-        const panelY = bodyY + (row * (panelHeight + panelSpacing));
+        ctx.textAlign = 'left';
+        ctx.fillText(detail.label, detailX + 10, detailCardY + 20);
         
-        drawPanel(ctx, panelX, panelY, panelWidth, panelHeight, panel);
+        // Value
+        ctx.fillStyle = USER_CARD_PALETTE.TEXT_PRIMARY;
+        ctx.font = 'bold 14px Arial';
+        ctx.fillText(detail.value, detailX + 10, detailCardY + 38);
     });
 
+    // 4. Remove body panels - they've been replaced with account details above
+    
     // 5. Draw footer
-    const footerY = containerY + containerHeight - 40;
+    const footerY = containerY + containerHeight - 25;
     
     // Lookback period and timezone
     ctx.fillStyle = USER_CARD_PALETTE.TEXT_MUTED;

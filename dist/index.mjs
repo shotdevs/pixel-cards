@@ -781,17 +781,32 @@ var drawGradientBackground2 = (ctx, width, height, backgroundColor, backgroundIm
 };
 var drawUserAvatar = async (ctx, x, y, size, avatarUrl) => {
   const avatarRadius = size / 2;
+  const centerX = x + avatarRadius;
+  const centerY = y + avatarRadius;
+  ctx.save();
+  ctx.shadowColor = USER_CARD_PALETTE.PRIMARY;
+  ctx.shadowBlur = 20;
+  ctx.fillStyle = USER_CARD_PALETTE.PRIMARY;
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, avatarRadius + 3, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
   try {
     const avatar = await loadImage3(avatarUrl);
     ctx.save();
     ctx.beginPath();
-    ctx.arc(x + avatarRadius, y + avatarRadius, avatarRadius, 0, Math.PI * 2);
+    ctx.arc(centerX, centerY, avatarRadius, 0, Math.PI * 2);
     ctx.clip();
     ctx.drawImage(avatar, x, y, size, size);
     ctx.restore();
   } catch (e) {
     drawDefaultAvatar(ctx, x, y, size);
   }
+  ctx.strokeStyle = USER_CARD_PALETTE.PRIMARY;
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, avatarRadius, 0, Math.PI * 2);
+  ctx.stroke();
 };
 var drawDefaultAvatar = (ctx, x, y, size) => {
   const avatarRadius = size / 2;
@@ -807,84 +822,6 @@ var drawDefaultAvatar = (ctx, x, y, size) => {
   ctx.textBaseline = "middle";
   ctx.fillText("\u{1F464}", centerX, centerY);
 };
-var drawPanel = (ctx, x, y, width, height, panel) => {
-  ctx.fillStyle = USER_CARD_PALETTE.PANEL_BG;
-  roundRect3(ctx, x, y, width, height, 12).fill();
-  ctx.strokeStyle = USER_CARD_PALETTE.PANEL_BORDER;
-  ctx.lineWidth = 1;
-  roundRect3(ctx, x, y, width, height, 12).stroke();
-  const padding = 15;
-  const contentX = x + padding;
-  const contentY = y + padding;
-  const contentWidth = width - padding * 2;
-  ctx.fillStyle = USER_CARD_PALETTE.TEXT_PRIMARY;
-  ctx.font = "bold 14px Arial";
-  ctx.textAlign = "left";
-  ctx.fillText(panel.icon, contentX, contentY + 15);
-  ctx.fillText(panel.title, contentX + 25, contentY + 15);
-  const contentStartY = contentY + 35;
-  switch (panel.type) {
-    case "list":
-      drawListPanel(ctx, contentX, contentStartY, contentWidth, panel.items);
-      break;
-    case "statistics":
-      drawStatisticsPanel(ctx, contentX, contentStartY, contentWidth, panel.stats);
-      break;
-    case "rankedList":
-      drawRankedListPanel(ctx, contentX, contentStartY, contentWidth, panel.items);
-      break;
-  }
-};
-var drawListPanel = (ctx, x, y, width, items) => {
-  items.forEach((item, index) => {
-    const itemY = y + index * 25;
-    ctx.fillStyle = USER_CARD_PALETTE.TEXT_SECONDARY;
-    ctx.font = "12px Arial";
-    ctx.textAlign = "left";
-    ctx.fillText(item.category, x, itemY + 15);
-    ctx.fillStyle = USER_CARD_PALETTE.TEXT_PRIMARY;
-    ctx.font = "bold 12px Arial";
-    ctx.textAlign = "right";
-    ctx.fillText(item.rank, x + width, itemY + 15);
-  });
-};
-var drawStatisticsPanel = (ctx, x, y, width, stats) => {
-  const itemHeight = 20;
-  const columnWidth = width / 3;
-  stats.forEach((stat, index) => {
-    const col = index % 3;
-    const row = Math.floor(index / 3);
-    const statX = x + col * columnWidth;
-    const statY = y + row * itemHeight;
-    ctx.fillStyle = USER_CARD_PALETTE.TEXT_MUTED;
-    ctx.font = "10px Arial";
-    ctx.textAlign = "left";
-    ctx.fillText(stat.period, statX, statY + 10);
-    ctx.fillStyle = USER_CARD_PALETTE.TEXT_PRIMARY;
-    ctx.font = "bold 11px Arial";
-    ctx.fillText(stat.value, statX, statY + 22);
-  });
-};
-var drawRankedListPanel = (ctx, x, y, width, items) => {
-  items.forEach((item, index) => {
-    const itemY = y + index * 30;
-    ctx.fillStyle = USER_CARD_PALETTE.TEXT_SECONDARY;
-    ctx.font = "bold 12px Arial";
-    ctx.textAlign = "left";
-    ctx.fillText(`${item.rank}.`, x, itemY + 15);
-    ctx.fillStyle = USER_CARD_PALETTE.TEXT_PRIMARY;
-    ctx.font = "12px Arial";
-    ctx.fillText(item.icon, x + 20, itemY + 15);
-    ctx.fillStyle = USER_CARD_PALETTE.TEXT_PRIMARY;
-    ctx.font = "11px Arial";
-    const name = item.name || "N/A";
-    ctx.fillText(name, x + 40, itemY + 15);
-    ctx.fillStyle = USER_CARD_PALETTE.TEXT_SECONDARY;
-    ctx.font = "10px Arial";
-    ctx.textAlign = "right";
-    ctx.fillText(item.value, x + width, itemY + 15);
-  });
-};
 var UserCard = async (options) => {
   const {
     theme = "dark",
@@ -898,8 +835,8 @@ var UserCard = async (options) => {
     textSecondaryColor = USER_CARD_PALETTE.TEXT_SECONDARY,
     container
   } = options;
-  const width = 800;
-  const height = 1e3;
+  const width = 600;
+  const height = 400;
   const canvas = createCanvas3(width, height);
   const ctx = canvas.getContext("2d");
   ctx.imageSmoothingEnabled = true;
@@ -931,48 +868,71 @@ var UserCard = async (options) => {
   ctx.strokeStyle = USER_CARD_PALETTE.CARD_BORDER;
   ctx.lineWidth = 2;
   roundRect3(ctx, containerX, containerY, containerWidth, containerHeight, 15).stroke();
-  const headerHeight = 120;
-  const headerY = containerY + 20;
-  const avatarSize = 60;
-  const avatarX = containerX + 20;
-  const avatarY = headerY + 10;
+  const headerHeight = 140;
+  const headerY = containerY;
+  const bannerGradient = ctx.createLinearGradient(containerX, headerY, containerX + containerWidth, headerY);
+  bannerGradient.addColorStop(0, "rgba(88, 101, 242, 0.3)");
+  bannerGradient.addColorStop(0.5, "rgba(88, 101, 242, 0.15)");
+  bannerGradient.addColorStop(1, "rgba(88, 101, 242, 0.3)");
+  ctx.fillStyle = bannerGradient;
+  roundRect3(ctx, containerX + 10, headerY + 10, containerWidth - 20, 80, 12).fill();
+  const avatarSize = 70;
+  const avatarX = containerX + 25;
+  const avatarY = headerY + 20;
   await drawUserAvatar(ctx, avatarX, avatarY, avatarSize, container.header.userInfo.avatar);
   const infoX = avatarX + avatarSize + 15;
-  const infoY = headerY + 15;
+  const infoY = headerY + 30;
+  ctx.save();
+  ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
+  ctx.shadowBlur = 3;
   ctx.fillStyle = textPrimaryColor;
   ctx.font = "bold 20px Arial";
   ctx.textAlign = "left";
   ctx.fillText(container.header.userInfo.displayName, infoX, infoY);
-  ctx.fillStyle = USER_CARD_PALETTE.TEXT_MUTED;
+  ctx.restore();
+  ctx.fillStyle = USER_CARD_PALETTE.TEXT_SECONDARY;
   ctx.font = "14px Arial";
-  ctx.fillText(`@${container.header.userInfo.username}`, infoX, infoY + 25);
+  ctx.fillText(`@${container.header.userInfo.username}`, infoX, infoY + 22);
   if (container.header.userInfo.customStatus) {
-    ctx.fillStyle = textSecondaryColor;
+    const statusY = infoY + 42;
+    ctx.fillStyle = "rgba(88, 101, 242, 0.2)";
+    const statusText = `${container.header.userInfo.customStatus.emoji} ${container.header.userInfo.customStatus.text}`;
     ctx.font = "12px Arial";
-    ctx.fillText(`${container.header.userInfo.customStatus.emoji} ${container.header.userInfo.customStatus.text}`, infoX, infoY + 45);
+    const statusWidth = ctx.measureText(statusText).width + 16;
+    roundRect3(ctx, infoX - 4, statusY - 12, statusWidth, 20, 4).fill();
+    ctx.fillStyle = textPrimaryColor;
+    ctx.fillText(statusText, infoX, statusY);
   }
-  const detailsY = infoY + 65;
+  const detailsY = headerY + 105;
+  const detailsPerRow = 2;
+  const detailSpacing = 20;
+  const detailCardWidth = (containerWidth - 60) / detailsPerRow;
   container.header.accountDetails.forEach((detail, index) => {
-    const detailY = detailsY + index * 18;
+    const col = index % detailsPerRow;
+    const row = Math.floor(index / detailsPerRow);
+    const detailX = containerX + 20 + col * (detailCardWidth + detailSpacing);
+    const detailCardY = detailsY + row * 60;
+    const cardGradient = ctx.createLinearGradient(detailX, detailCardY, detailX, detailCardY + 50);
+    cardGradient.addColorStop(0, "#3a3d42");
+    cardGradient.addColorStop(1, USER_CARD_PALETTE.PANEL_BG);
+    ctx.save();
+    ctx.shadowColor = "rgba(0, 0, 0, 0.2)";
+    ctx.shadowBlur = 5;
+    ctx.fillStyle = cardGradient;
+    roundRect3(ctx, detailX, detailCardY, detailCardWidth, 50, 8).fill();
+    ctx.restore();
+    ctx.strokeStyle = USER_CARD_PALETTE.PANEL_BORDER;
+    ctx.lineWidth = 1;
+    roundRect3(ctx, detailX, detailCardY, detailCardWidth, 50, 8).stroke();
     ctx.fillStyle = USER_CARD_PALETTE.TEXT_MUTED;
-    ctx.font = "10px Arial";
-    ctx.fillText(detail.label, infoX, detailY);
-    ctx.fillStyle = textSecondaryColor;
     ctx.font = "11px Arial";
-    ctx.fillText(detail.value, infoX + 100, detailY);
+    ctx.textAlign = "left";
+    ctx.fillText(detail.label, detailX + 10, detailCardY + 20);
+    ctx.fillStyle = USER_CARD_PALETTE.TEXT_PRIMARY;
+    ctx.font = "bold 14px Arial";
+    ctx.fillText(detail.value, detailX + 10, detailCardY + 38);
   });
-  const bodyY = headerY + headerHeight + 20;
-  const panelWidth = (containerWidth - 60) / 2;
-  const panelHeight = 150;
-  const panelSpacing = 20;
-  container.body.panels.forEach((panel, index) => {
-    const col = index % 2;
-    const row = Math.floor(index / 2);
-    const panelX = containerX + 20 + col * (panelWidth + panelSpacing);
-    const panelY = bodyY + row * (panelHeight + panelSpacing);
-    drawPanel(ctx, panelX, panelY, panelWidth, panelHeight, panel);
-  });
-  const footerY = containerY + containerHeight - 40;
+  const footerY = containerY + containerHeight - 25;
   ctx.fillStyle = USER_CARD_PALETTE.TEXT_MUTED;
   ctx.font = "10px Arial";
   ctx.textAlign = "left";

@@ -1128,6 +1128,75 @@ var drawInfoPanel = (ctx, x, y, icon, label, value) => {
   ctx.font = "14px Arial";
   ctx.fillText(value, x + 35, y + 15);
 };
+var NewWelcomeCard = async (options) => {
+  const {
+    username,
+    userPosition = "Member",
+    avatar,
+    backgroundImage,
+    backgroundColor = "#1a1a2e"
+  } = options;
+  const width = 876;
+  const height = 493;
+  const canvas = createCanvas4(width, height);
+  const ctx = canvas.getContext("2d");
+  ctx.imageSmoothingEnabled = true;
+  try {
+    const fontPath = path4.join(__dirname, "..", "fonts", "pixel.ttf");
+    if (!GlobalFonts4.has("PixelFont")) {
+      GlobalFonts4.registerFromPath(fontPath, "PixelFont");
+    }
+  } catch (e) {
+    console.warn("Pixel font not found, using default fonts");
+  }
+  if (backgroundImage) {
+    try {
+      const bgImage = await loadImage4(backgroundImage);
+      ctx.drawImage(bgImage, 0, 0, width, height);
+    } catch (e) {
+      ctx.fillStyle = backgroundColor;
+      ctx.fillRect(0, 0, width, height);
+    }
+  } else {
+    ctx.fillStyle = backgroundColor;
+    ctx.fillRect(0, 0, width, height);
+  }
+  const avatarSize = 180;
+  const avatarX = (width - avatarSize) / 2;
+  const avatarY = (height - avatarSize) / 2 - 40;
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(avatarX + avatarSize / 2, avatarY + avatarSize / 2, avatarSize / 2, 0, Math.PI * 2);
+  ctx.clip();
+  try {
+    const avatarImg = await loadImage4(avatar);
+    ctx.drawImage(avatarImg, avatarX, avatarY, avatarSize, avatarSize);
+  } catch (e) {
+    ctx.fillStyle = "#333";
+    ctx.fill();
+  }
+  ctx.restore();
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.arc(avatarX + avatarSize / 2, avatarY + avatarSize / 2, avatarSize / 2, 0, Math.PI * 2);
+  ctx.stroke();
+  const infoY = avatarY + avatarSize + 20;
+  const infoHeight = 100;
+  const infoWidth = 400;
+  const infoX = (width - infoWidth) / 2;
+  ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
+  roundRect4(ctx, infoX, infoY, infoWidth, infoHeight, 15).fill();
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "bold 32px Arial";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(username, width / 2, infoY + 35);
+  ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
+  ctx.font = "20px Arial";
+  ctx.fillText(userPosition, width / 2, infoY + 70);
+  return canvas.toBuffer("image/png");
+};
 var WelcomeCard = async (options) => {
   const {
     username,
@@ -1405,6 +1474,7 @@ var Pixel = async (option) => {
 export {
   DatabaseHelper,
   GuildStatus,
+  NewWelcomeCard,
   Pixel,
   PixelJapanese,
   UserCard,

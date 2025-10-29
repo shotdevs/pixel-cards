@@ -256,6 +256,98 @@ const drawInfoPanel = (ctx: any, x: number, y: number, icon: string, label: stri
     ctx.fillText(value, x + 35, y + 15);
 };
 
+export interface NewWelcomeCardOptions {
+    username: string;
+    userPosition?: string;
+    avatar: string;
+    backgroundImage?: string;
+    backgroundColor?: string;
+}
+
+export const NewWelcomeCard = async (options: NewWelcomeCardOptions): Promise<Buffer> => {
+    const {
+        username,
+        userPosition = 'Member',
+        avatar,
+        backgroundImage,
+        backgroundColor = '#1a1a2e'
+    } = options;
+
+    const width = 876;
+    const height = 493;
+    const canvas = createCanvas(width, height);
+    const ctx = canvas.getContext('2d');
+    
+    ctx.imageSmoothingEnabled = true;
+
+    try {
+        const fontPath = path.join(__dirname, '..', 'fonts', 'pixel.ttf');
+        if (!GlobalFonts.has('PixelFont')) {
+            GlobalFonts.registerFromPath(fontPath, 'PixelFont');
+        }
+    } catch (e) {
+        console.warn("Pixel font not found, using default fonts");
+    }
+
+    if (backgroundImage) {
+        try {
+            const bgImage = await loadImage(backgroundImage);
+            ctx.drawImage(bgImage, 0, 0, width, height);
+        } catch (e) {
+            ctx.fillStyle = backgroundColor;
+            ctx.fillRect(0, 0, width, height);
+        }
+    } else {
+        ctx.fillStyle = backgroundColor;
+        ctx.fillRect(0, 0, width, height);
+    }
+
+    const avatarSize = 180;
+    const avatarX = (width - avatarSize) / 2;
+    const avatarY = (height - avatarSize) / 2 - 40;
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(avatarX + avatarSize / 2, avatarY + avatarSize / 2, avatarSize / 2, 0, Math.PI * 2);
+    ctx.clip();
+    
+    try {
+        const avatarImg = await loadImage(avatar);
+        ctx.drawImage(avatarImg, avatarX, avatarY, avatarSize, avatarSize);
+    } catch (e) {
+        ctx.fillStyle = '#333';
+        ctx.fill();
+    }
+    
+    ctx.restore();
+
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(avatarX + avatarSize / 2, avatarY + avatarSize / 2, avatarSize / 2, 0, Math.PI * 2);
+    ctx.stroke();
+
+    const infoY = avatarY + avatarSize + 20;
+    const infoHeight = 100;
+    const infoWidth = 400;
+    const infoX = (width - infoWidth) / 2;
+
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+    roundRect(ctx, infoX, infoY, infoWidth, infoHeight, 15).fill();
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 32px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(username, width / 2, infoY + 35);
+
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+    ctx.font = '20px Arial';
+    ctx.fillText(userPosition, width / 2, infoY + 70);
+
+    return canvas.toBuffer('image/png');
+};
+
 export const WelcomeCard = async (options: WelcomeCardOptions): Promise<Buffer> => {
     const {
         username,
@@ -279,10 +371,8 @@ export const WelcomeCard = async (options: WelcomeCardOptions): Promise<Buffer> 
     const canvas = createCanvas(width, height);
     const ctx = canvas.getContext('2d');
     
-    // Enable anti-aliasing
     ctx.imageSmoothingEnabled = true;
 
-    // Load font
     try {
         const fontPath = path.join(__dirname, '..', 'fonts', 'pixel.ttf');
         if (!GlobalFonts.has('PixelFont')) {
@@ -292,7 +382,6 @@ export const WelcomeCard = async (options: WelcomeCardOptions): Promise<Buffer> 
         console.warn("Pixel font not found, using default fonts");
     }
 
-    // 1. Draw background
     if (backgroundImage) {
         try {
             const bgImage = await loadImage(backgroundImage);
@@ -304,20 +393,16 @@ export const WelcomeCard = async (options: WelcomeCardOptions): Promise<Buffer> 
         drawCyberpunkBackground(ctx, width, height, backgroundColor);
     }
     
-    // 2. Draw HUD elements
     drawHUDElements(ctx, width, height, primaryColor);
     
-    // 3. Draw main card container
     const cardWidth = 720;
     const cardHeight = 380;
     const cardX = (width - cardWidth) / 2;
     const cardY = (height - cardHeight) / 2;
     
-    // Card background with transparency
     ctx.fillStyle = 'rgba(26, 26, 46, 0.7)';
     roundRect(ctx, cardX, cardY, cardWidth, cardHeight, 20).fill();
     
-    // Card border with glow
     ctx.save();
     ctx.strokeStyle = borderColor;
     ctx.lineWidth = 2;
@@ -326,23 +411,19 @@ export const WelcomeCard = async (options: WelcomeCardOptions): Promise<Buffer> 
     roundRect(ctx, cardX, cardY, cardWidth, cardHeight, 20).stroke();
     ctx.restore();
     
-    // 4. Draw avatar with glowing rings
     const avatarSize = 140;
     const avatarX = (width - avatarSize) / 2;
     const avatarY = cardY + 40;
     await drawGlowingAvatar(ctx, avatarX, avatarY, avatarSize, avatar);
     
-    // 5. Draw welcome text
     const textY = avatarY + avatarSize + 40;
     
-    // "WELCOME" text
     ctx.fillStyle = secondaryColor;
     ctx.font = 'bold 32px Arial';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText('WELCOME', width / 2, textY);
     
-    // Username text with glow
     ctx.save();
     const displayName = discriminator ? `[${username}#${discriminator}]` : `[${username}]`;
     ctx.fillStyle = textColor;
@@ -352,19 +433,15 @@ export const WelcomeCard = async (options: WelcomeCardOptions): Promise<Buffer> 
     ctx.fillText(displayName, width / 2, textY + 45);
     ctx.restore();
     
-    // 6. Draw info panels
     const infoPanelY = textY + 100;
     const panelSpacing = cardWidth / 2;
     const leftPanelX = cardX + 80;
     const rightPanelX = cardX + panelSpacing + 50;
     
-    // Left panel - Join date
     drawInfoPanel(ctx, leftPanelX, infoPanelY, '📅', `JOINED: ${joinDate}`, joinTime);
     
-    // Right panel - Guild position
     drawInfoPanel(ctx, rightPanelX, infoPanelY, '🛡️', `GUILD POSITION:`, `#${guildPosition}`);
     
-    // 7. Draw member count at bottom
     ctx.fillStyle = textColor;
     ctx.font = 'bold 18px Arial';
     ctx.textAlign = 'center';

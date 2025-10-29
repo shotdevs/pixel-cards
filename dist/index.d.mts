@@ -241,6 +241,14 @@ interface WelcomeCardOptions {
     textColor?: string;
     borderColor?: string;
 }
+interface NewWelcomeCardOptions {
+    username: string;
+    userPosition?: string;
+    avatar: string;
+    backgroundImage?: string;
+    backgroundColor?: string;
+}
+declare const NewWelcomeCard: (options: NewWelcomeCardOptions) => Promise<Buffer>;
 declare const WelcomeCard: (options: WelcomeCardOptions) => Promise<Buffer>;
 
 type PixelOption = {
@@ -260,4 +268,4 @@ type PixelOption = {
 };
 declare const Pixel: (option: PixelOption) => Promise<Buffer>;
 
-export { type AccountDetail, type ActivityData, type Database, DatabaseHelper, type GuildStats, GuildStatus, type GuildStatusOptions, type MessageData, type Panel, Pixel, PixelJapanese, type PixelOption, type RankedItem, type ServerRank, type Statistic, UserCard, type UserCardOptions, type UserData, type UserInfo, type VoiceSession, type VoiceTimeData, WelcomeCard, type WelcomeCardOptions, createGuildStats };
+export { type AccountDetail, type ActivityData, type Database, DatabaseHelper, type GuildStats, GuildStatus, type GuildStatusOptions, type MessageData, NewWelcomeCard, type NewWelcomeCardOptions, type Panel, Pixel, PixelJapanese, type PixelOption, type RankedItem, type ServerRank, type Statistic, UserCard, type UserCardOptions, type UserData, type UserInfo, type VoiceSession, type VoiceTimeData, WelcomeCard, type WelcomeCardOptions, createGuildStats };

@@ -2,14 +2,31 @@
 
 A stunning cyberpunk-themed welcome card generator for Discord bots. Perfect for welcoming new members to your server with style!
 
+## Card Types
+
+### WelcomeCard (Cyberpunk Theme)
+Full-featured cyberpunk welcome card with guild information and stats.
+
+### NewWelcomeCard (Simple Theme)
+Clean and minimal welcome card with centered profile picture and custom background support.
+
 ## Features
 
+### WelcomeCard Features
 - 🎨 Cyberpunk/tech aesthetic with glowing effects
 - 🌟 Animated-looking rings around avatar
 - 📊 Display join date, time, and guild position
 - 🎭 Member count display
 - 💫 HUD-style decorative elements
 - ⚡ Fully customizable
+
+### NewWelcomeCard Features
+- 🖼️ Centered profile picture
+- 🎨 Custom background image support
+- 🌗 Light-dark transparent info section
+- 👤 Display username and user position
+- ⚡ Simple and clean design
+- 🎯 Perfect for minimalist themes
 
 ## Installation
 
@@ -18,6 +35,74 @@ npm install pixel-cards
 ```
 
 ## Usage
+
+## NewWelcomeCard Usage
+
+### Basic Example
+
+```javascript
+const { NewWelcomeCard } = require('pixel-cards');
+const fs = require('fs');
+
+async function createNewWelcomeCard() {
+    const card = await NewWelcomeCard({
+        username: 'JohnDoe',
+        userPosition: 'Admin',
+        avatar: 'https://cdn.discordapp.com/avatars/123456789/avatar.png',
+        backgroundImage: 'https://example.com/background.jpg'
+    });
+
+    fs.writeFileSync('welcome-new.png', card);
+}
+
+createNewWelcomeCard();
+```
+
+### Discord.js Integration
+
+```javascript
+const { Client, GatewayIntentBits, AttachmentBuilder } = require('discord.js');
+const { NewWelcomeCard } = require('pixel-cards');
+
+const client = new Client({
+    intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMembers
+    ]
+});
+
+client.on('guildMemberAdd', async (member) => {
+    const welcomeChannel = member.guild.channels.cache.find(
+        channel => channel.name === 'welcome'
+    );
+
+    if (!welcomeChannel) return;
+
+    try {
+        const card = await NewWelcomeCard({
+            username: member.user.username,
+            userPosition: 'New Member',
+            avatar: member.user.displayAvatarURL({ extension: 'png', size: 256 }),
+            backgroundImage: 'https://example.com/server-bg.jpg'
+        });
+
+        const attachment = new AttachmentBuilder(card, { 
+            name: 'welcome.png' 
+        });
+
+        await welcomeChannel.send({
+            content: `Welcome <@${member.id}>!`,
+            files: [attachment]
+        });
+    } catch (error) {
+        console.error('Error generating welcome card:', error);
+    }
+});
+
+client.login('YOUR_BOT_TOKEN');
+```
+
+## WelcomeCard Usage
 
 ### Basic Example
 
@@ -104,6 +189,31 @@ client.login('YOUR_BOT_TOKEN');
 
 ## API Reference
 
+### NewWelcomeCard(options)
+
+Generates a clean, minimal welcome card with centered avatar and custom background.
+
+#### Options
+
+| Parameter | Type | Required | Description | Default |
+|-----------|------|----------|-------------|---------|
+| `username` | string | ✅ Yes | The username to display | - |
+| `avatar` | string | ✅ Yes | URL to the user's avatar image | - |
+| `userPosition` | string | ❌ No | User's role or position (e.g., "Admin", "Member") | "Member" |
+| `backgroundImage` | string | ❌ No | URL to custom background image | None |
+| `backgroundColor` | string | ❌ No | Fallback background color if no image | "#1a1a2e" |
+
+#### Returns
+
+Returns a `Promise<Buffer>` containing the PNG image data.
+
+#### Output Specifications
+
+- **Resolution**: 876 x 493 pixels
+- **Format**: PNG with transparency support
+- **Avatar**: Centered circular avatar (180x180)
+- **Info Panel**: Semi-transparent dark panel below avatar
+
 ### WelcomeCard(options)
 
 Generates a cyberpunk-themed welcome card.
@@ -138,7 +248,43 @@ The welcome card features:
 
 ## Examples
 
-### Example 1: Basic Welcome
+### NewWelcomeCard Examples
+
+#### Example 1: Basic with Color Background
+
+```javascript
+const card = await NewWelcomeCard({
+    username: 'CoolUser',
+    avatar: 'https://example.com/avatar.png',
+    backgroundColor: '#2c3e50'
+});
+```
+
+#### Example 2: With Custom Background Image
+
+```javascript
+const card = await NewWelcomeCard({
+    username: 'ProGamer',
+    userPosition: 'VIP Member',
+    avatar: 'https://example.com/avatar.png',
+    backgroundImage: 'https://example.com/gaming-bg.jpg'
+});
+```
+
+#### Example 3: Admin Welcome Card
+
+```javascript
+const card = await NewWelcomeCard({
+    username: 'AdminName',
+    userPosition: 'Server Administrator',
+    avatar: 'https://example.com/admin-avatar.png',
+    backgroundImage: 'https://example.com/admin-bg.png'
+});
+```
+
+### WelcomeCard Examples
+
+#### Example 1: Basic Welcome
 
 ```javascript
 const card = await WelcomeCard({
@@ -149,7 +295,7 @@ const card = await WelcomeCard({
 });
 ```
 
-### Example 2: With All Options
+#### Example 2: With All Options
 
 ```javascript
 const card = await WelcomeCard({
@@ -164,7 +310,7 @@ const card = await WelcomeCard({
 });
 ```
 
-### Example 3: Dynamic Member Count
+#### Example 3: Dynamic Member Count
 
 ```javascript
 const member = // ... Discord member object
